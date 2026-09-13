@@ -1,0 +1,18 @@
+[package]
+name = "shbt-fea-structural"
+description = "Non-linear thermomechanical FEA: DIN 2092/2093 Belleville stacks, Stoney film stress, Coffin-Manson fatigue"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+shbt-core-math = { workspace = true }
+
+[lints]
+workspace = true

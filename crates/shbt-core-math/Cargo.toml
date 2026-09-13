@@ -1,0 +1,17 @@
+[package]
+name = "shbt-core-math"
+description = "Mathematical foundations: SE(3) Lie-group ops, Yoshida symplectic integrators, Q64.64 fixed point, precision policy"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+
+[lints]
+workspace = true

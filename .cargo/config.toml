@@ -1,0 +1,18 @@
+# Target lockdown for the zero-drift numerical core (simulator_spec.pdf §1, Stage 1).
+#
+# * `-C target-cpu=native` / `-C opt-level=3`: full SIMD width and optimisation on the
+#   build host.
+# * The two `llvm-args` flags pin strict IEEE 754-2019 semantics: NaN and signed-zero
+#   handling must never be assumed away (i.e. no fast-math).  Contraction (FMA) is left
+#   at the LLVM default of "off" for Rust and must only be introduced through explicit
+#   `mul_add` intrinsics.
+[build]
+rustflags = [
+    "-C", "target-cpu=native",
+    "-C", "opt-level=3",
+    "-C", "llvm-args=-enable-no-nans-fp-math=false",
+    "-C", "llvm-args=-enable-no-signed-zeros-fp-math=false",
+]
+
+[term]
+color = "auto"

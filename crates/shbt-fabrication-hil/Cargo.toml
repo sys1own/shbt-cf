@@ -1,0 +1,22 @@
+[package]
+name = "shbt-fabrication-hil"
+description = "Real-time hardware-in-the-loop telemetry ingestion and residual monitoring"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+shbt-core-math = { workspace = true }
+shbt-dielectric-floquet = { workspace = true }
+shbt-rcwa-optics = { workspace = true }
+shbt-fea-structural = { workspace = true }
+shbt-metrology-gum = { workspace = true }
+
+[lints]
+workspace = true

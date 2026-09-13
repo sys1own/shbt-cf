@@ -1,0 +1,18 @@
+[package]
+name = "shbt-dielectric-floquet"
+description = "Inverse Floquet-Adler-Wiser non-local dielectric tensor solver"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+shbt-core-math = { workspace = true }
+
+[lints]
+workspace = true

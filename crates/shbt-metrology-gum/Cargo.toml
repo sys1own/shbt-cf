@@ -1,0 +1,18 @@
+[package]
+name = "shbt-metrology-gum"
+description = "ISO/IEC Guide 98-3 (GUM S1) uncertainty propagation and Monte Carlo metrology"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+shbt-core-math = { workspace = true }
+
+[lints]
+workspace = true
