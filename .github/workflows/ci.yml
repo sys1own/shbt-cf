@@ -21,6 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: GMP/MPFR build prerequisites for `rug`
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends m4 libgmp-dev libmpfr-dev
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo check --workspace --all-targets --locked
@@ -30,6 +32,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: GMP/MPFR build prerequisites for `rug`
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends m4 libgmp-dev libmpfr-dev
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
@@ -51,6 +55,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: GMP/MPFR build prerequisites for `rug`
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends m4 libgmp-dev libmpfr-dev
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo test --workspace --locked

@@ -12,6 +12,7 @@ publish.workspace = true
 path = "src/lib.rs"
 
 [dependencies]
+rug = { version = "1.27", default-features = false, features = ["float"] }
 
 [lints]
 workspace = true

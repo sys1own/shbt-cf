@@ -36,14 +36,7 @@ impl PrecisionMode {
     /// are lost to conditioning; the result keeps at least 53 significant bits
     /// after that loss and stays inside the supported range.
     pub fn arbitrary_for_condition_number(kappa: f64) -> Self {
-        let lost_bits = if kappa.is_finite() && kappa > 1.0 {
-            ceil_u32(libm_log2(kappa))
-        } else if kappa.is_finite() {
-            0
-        } else {
-            MAX_ARBITRARY_BITS
-        };
-        let wanted = F64_MANTISSA_BITS.saturating_add(lost_bits);
+        let wanted = F64_MANTISSA_BITS.saturating_add(bits_lost_to_conditioning(kappa));
         Self::Arbitrary {
             mantissa_bits: wanted.clamp(MIN_ARBITRARY_BITS, MAX_ARBITRARY_BITS),
         }
@@ -56,6 +49,19 @@ impl PrecisionMode {
             Self::FixedQ64x64 => 128,
             Self::Arbitrary { mantissa_bits } => mantissa_bits,
         }
+    }
+}
+
+/// Significant bits lost when solving a system with condition number `kappa`,
+/// `ceil(log2 kappa)`. Non-finite or sub-unity `kappa` saturate to
+/// `MAX_ARBITRARY_BITS` / `0` respectively.
+pub fn bits_lost_to_conditioning(kappa: f64) -> u32 {
+    if !kappa.is_finite() {
+        MAX_ARBITRARY_BITS
+    } else if kappa > 1.0 {
+        ceil_u32(libm_log2(kappa))
+    } else {
+        0
     }
 }
 
