@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shbt-cf"
+version = "0.1.0"
+description = "Python orchestration wrapper for the SHBT zero-drift precision simulator Rust workspace"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = []
+
+[project.scripts]
+shbt-cf = "shbt_cf.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["shbt_cf*"]

@@ -1,0 +1,43 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/shbt-core-math",
+    "crates/shbt-dielectric-floquet",
+    "crates/shbt-rcwa-optics",
+    "crates/shbt-fea-structural",
+    "crates/shbt-metrology-gum",
+    "crates/shbt-fabrication-hil",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.84"
+license = "MIT"
+repository = "https://github.com/sys1own/shbt-cf"
+publish = false
+
+[workspace.dependencies]
+shbt-core-math = { path = "crates/shbt-core-math", version = "0.1.0" }
+shbt-dielectric-floquet = { path = "crates/shbt-dielectric-floquet", version = "0.1.0" }
+shbt-rcwa-optics = { path = "crates/shbt-rcwa-optics", version = "0.1.0" }
+shbt-fea-structural = { path = "crates/shbt-fea-structural", version = "0.1.0" }
+shbt-metrology-gum = { path = "crates/shbt-metrology-gum", version = "0.1.0" }
+
+[workspace.lints.rust]
+unsafe_code = "warn"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+float_cmp = "allow"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+debug = false
+panic = "abort"
+
+[profile.dev]
+opt-level = 1

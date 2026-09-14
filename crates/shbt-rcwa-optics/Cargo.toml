@@ -1,0 +1,20 @@
+[package]
+name = "shbt-rcwa-optics"
+description = "2D/3D Rigorous Coupled-Wave Analysis with S-matrix recursion"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+shbt-core-math = { workspace = true }
+faer = { version = "0.22", default-features = false, features = ["std"] }
+num-complex = "0.4"
+
+[lints]
+workspace = true

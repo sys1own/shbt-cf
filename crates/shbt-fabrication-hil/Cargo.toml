@@ -1,0 +1,31 @@
+[package]
+name = "shbt-fabrication-hil"
+description = "Real-time hardware-in-the-loop telemetry ingestion and residual monitoring"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+name = "shbt_cf_native"
+path = "src/lib.rs"
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+shbt-core-math = { workspace = true }
+shbt-dielectric-floquet = { workspace = true }
+shbt-rcwa-optics = { workspace = true }
+shbt-fea-structural = { workspace = true }
+shbt-metrology-gum = { workspace = true }
+libc = "0.2"
+tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros", "sync"] }
+pyo3 = { version = "0.25", optional = true, features = ["extension-module", "abi3-py310"] }
+numpy = { version = "0.25", optional = true }
+
+[features]
+python = ["dep:pyo3", "dep:numpy"]
+
+[lints]
+workspace = true
