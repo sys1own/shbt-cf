@@ -29,7 +29,9 @@ pub struct PyShbtNumericalKernel {
 impl PyShbtNumericalKernel {
     #[new]
     fn new() -> Self {
-        Self { inner: Default::default() }
+        Self {
+            inner: Default::default(),
+        }
     }
 
     #[getter]
@@ -38,12 +40,18 @@ impl PyShbtNumericalKernel {
     }
 
     fn verify_state_reduction(&self, hsvs: Vec<f64>) -> PyResult<bool> {
-        self.inner.verify_state_reduction(&hsvs)
+        self.inner
+            .verify_state_reduction(&hsvs)
             .map_err(pyo3::exceptions::PyValueError::new_err)
     }
 
-    fn compute_floquet_inversion(&self, u_eff: f64, v_driven: f64) -> PyResult<(String, f64, String)> {
-        self.inner.compute_floquet_inversion(u_eff, v_driven)
+    fn compute_floquet_inversion(
+        &self,
+        u_eff: f64,
+        v_driven: f64,
+    ) -> PyResult<(String, f64, String)> {
+        self.inner
+            .compute_floquet_inversion(u_eff, v_driven)
             .map_err(pyo3::exceptions::PyValueError::new_err)
     }
 }

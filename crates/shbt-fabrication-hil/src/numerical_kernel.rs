@@ -9,7 +9,9 @@ pub struct ShbtNumericalKernel {
 
 impl Default for ShbtNumericalKernel {
     fn default() -> Self {
-        Self { precision_bits: 512 }
+        Self {
+            precision_bits: 512,
+        }
     }
 }
 
@@ -51,7 +53,11 @@ impl ShbtNumericalKernel {
         }
         let inverse = Float::with_val(self.precision_bits, 1) / &epsilon;
         let drift = (Float::with_val(self.precision_bits, inv_f64) - &inverse).abs();
-        Ok((format!("{inverse:.150e}"), inv_f64, format!("{drift:.150e}")))
+        Ok((
+            format!("{inverse:.150e}"),
+            inv_f64,
+            format!("{drift:.150e}"),
+        ))
     }
 }
 
@@ -62,8 +68,13 @@ mod tests {
     #[test]
     fn verifies_reference_reduction_and_rejects_detuning() {
         let kernel = ShbtNumericalKernel::default();
-        assert_eq!(kernel.verify_state_reduction(&[12.45, 5.13, 1.85, 0.94]), Ok(true));
-        assert!(kernel.verify_state_reduction(&[12.45000000001, 5.13, 1.85, 0.94]).is_err());
+        assert_eq!(
+            kernel.verify_state_reduction(&[12.45, 5.13, 1.85, 0.94]),
+            Ok(true)
+        );
+        assert!(kernel
+            .verify_state_reduction(&[12.45000000001, 5.13, 1.85, 0.94])
+            .is_err());
     }
 
     #[test]
