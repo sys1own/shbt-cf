@@ -89,3 +89,27 @@ Verification:
 Benchmark gate (`pipeline::tests::ten_khz_streams_zero_drops_sub_microsecond`):
 61 000 frames across three synthetic channels through the real ring+task — 0
 dropped, 0 mutex/mlock calls, sub-microsecond mean per-frame processing latency.
+## Python orchestration & FFI (Stage 5)
+
+- `shbt-fabrication-hil` builds `shbt_cf_native` (`crate-type = ["rlib","cdylib"]`,
+  optional `python` feature → PyO0 extension, `abi3-py310`):
+  - `src/ffi.rs` — plain `extern "C"` exports (`shbt_beat_hz`, `shbt_disc_force`,
+    `shbt_chi2`, `shbt_ring_*` heap-ring handle API).
+  - `src/pyo3_ffi.rs` — `Ring` pyclass plus `beat_hz`, `disc_force`, `chi2`,
+    `power_net_mc`, `coffin_manson_mc`, `column_means`. `values_view()` /
+    `frame_matrix()` expose the ring's slot memory through
+    `PyArray::borrow_from_array` — zero-copy NumPy views of the mmap/heap region.
+- `python/shbt_cf/` — `workbench.py` (sweep engine, NSGA-III driver, GUM MC
+  PDFs; `TorqueWrench`/`BellevillePreload`/`HipimsStress`/`GratingAlignment`
+  HUD model), `optimize.py` (pure-NumPy NSGA-III: Das–Dennis refs, vectorised
+  non-dominated sort, niching, SBX + polynomial mutation), `hud_streamlit.py`
+  (two-mode web UI). CLI: `python -m shbt_cf {mc,sweep,optimize,hud,hud-web,verify-zerocopy}`.
+- `scripts/verify_zerocopy.py` — pointer-identity gate: asserts
+  `view.ctypes.data == ring.data_ptr()` for both views, `OWNDATA` clear, and
+  write-through visibility into the Rust consumer.
+
+Build the native module once:
+```
+maturin build -m crates/shbt-fabrication-hil/Cargo.toml --features python --release
+pip3 install --user --no-deps target/wheels/shbt_fabrication_hil-*.whl
+```

@@ -16,12 +16,16 @@
 #![allow(unsafe_code)]
 #![allow(clippy::missing_safety_doc)]
 
+pub mod ffi;
 pub mod pipeline;
 pub mod ring;
 pub mod rom;
 #[cfg(unix)]
 pub mod shm;
 pub mod telemetry;
+
+#[cfg(feature = "python")]
+mod pyo3_ffi;
 
 pub use ring::{Consumer, Producer, Region, SpscRing};
 pub use rom::{chi2, reduced_chi2, ReducedOrderModel, ResidualMonitor};
