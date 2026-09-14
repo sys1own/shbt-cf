@@ -20,6 +20,34 @@ use shbt_metrology_gum::distributions::{Input, Marginal, Sampler};
 use shbt_metrology_gum::engine::{self, models};
 use shbt_rcwa_optics::material::beat_frequency;
 
+#[pyclass(name = "ShbtNumericalKernel")]
+pub struct PyShbtNumericalKernel {
+    inner: crate::numerical_kernel::ShbtNumericalKernel,
+}
+
+#[pymethods]
+impl PyShbtNumericalKernel {
+    #[new]
+    fn new() -> Self {
+        Self { inner: Default::default() }
+    }
+
+    #[getter]
+    fn precision_bits(&self) -> u32 {
+        self.inner.precision_bits
+    }
+
+    fn verify_state_reduction(&self, hsvs: Vec<f64>) -> PyResult<bool> {
+        self.inner.verify_state_reduction(&hsvs)
+            .map_err(pyo3::exceptions::PyValueError::new_err)
+    }
+
+    fn compute_floquet_inversion(&self, u_eff: f64, v_driven: f64) -> PyResult<(String, f64, String)> {
+        self.inner.compute_floquet_inversion(u_eff, v_driven)
+            .map_err(pyo3::exceptions::PyValueError::new_err)
+    }
+}
+
 #[pyclass]
 pub struct PyScreeningKernel {
     inner: crate::physics::screening::ScreeningKernel,
@@ -490,6 +518,7 @@ fn column_means(x: PyReadonlyArray2<f64>) -> Vec<f64> {
 /// `shbt_cf_native` Python module.
 #[pymodule]
 fn shbt_cf_native(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_class::<PyShbtNumericalKernel>()?;
     m.add_class::<PyRing>()?;
     m.add_class::<PyScreeningKernel>()?;
     m.add_class::<PyConformalKineticsSolver>()?;

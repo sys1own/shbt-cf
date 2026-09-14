@@ -24,6 +24,8 @@ pub mod physics;
 pub mod pipeline;
 pub mod ring;
 pub mod rom;
+/// 512-bit state-reduction and Floquet inversion checks.
+pub mod numerical_kernel;
 #[cfg(unix)]
 pub mod shm;
 pub mod telemetry;
@@ -36,6 +38,7 @@ mod pyo3_ffi;
 pub use ring::{Consumer, Producer, Region, SpscRing};
 pub use rom::{chi2, reduced_chi2, ReducedOrderModel, ResidualMonitor};
 pub use telemetry::{Channel, Frame, FRAME_VALUES};
+pub use numerical_kernel::ShbtNumericalKernel;
 
 /// Canonical crate identifier used by the workbench for topology reporting.
 pub const CRATE_NAME: &str = "shbt-fabrication-hil";
