@@ -1,7 +1,0 @@
-PASS  values_view pointer identity
-PASS  frame_matrix pointer identity
-PASS  values_view capacity
-PASS  frame_matrix shape
-PASS  view owns no data (OWNDATA clear)
-PASS  writes visible to Rust
-rust slot ptr = 0x558f89e6ba80, numpy data ptr = 0x558f89e6ba80

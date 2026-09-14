@@ -1,1 +1,0 @@
-first front: 92 designs (F range 6283.19..78410.02 N, bounds 6283.19..78539.82 N)
