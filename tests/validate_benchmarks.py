@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -50,7 +52,7 @@ def reduced_order_hankel_values() -> np.ndarray:
     return singular_values
 
 
-def main() -> None:
+def main(export_results: str | None = None) -> None:
     optical = np.array([optical_coupling_percent(a, t) for a, t in zip([41.25, 41.80, 42.50], [30.0, 45.0, 60.0])])
     assert np.all(np.abs(optical - TABLE_I) < TABLE_I_TOL)
 
@@ -67,8 +69,25 @@ def main() -> None:
     tail_ratio = np.sum(singular_values[4:] ** 2) / np.sum(singular_values ** 2)
     assert relative_error <= 1e-6
     assert tail_ratio < 1e-4
+
+    if export_results is not None:
+        results = {
+            "table_I": {"calculated": optical.tolist(), "target": TABLE_I.tolist(), "tolerance": TABLE_I_TOL},
+            "table_III": {"calculated": screening.tolist(), "target": TABLE_III.tolist(), "tolerance": TABLE_III_TOL.tolist()},
+            "table_VIII": {"calculated": flux.tolist(), "target": TABLE_VIII.tolist(), "tolerance": TABLE_VIII_TOL.tolist()},
+            "table_XXXVII": {
+                "calculated": singular_values.tolist(),
+                "target": TABLE_XXXVII.tolist(),
+                "relative_error_first_four": relative_error,
+                "tail_energy_ratio": tail_ratio,
+            },
+        }
+        Path(export_results).write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
     print("Tables I, III, VIII, and XXXVII benchmark validation passed")
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--export-results", metavar="PATH", help="write calculated benchmark results as JSON")
+    args = parser.parse_args()
+    main(args.export_results)
