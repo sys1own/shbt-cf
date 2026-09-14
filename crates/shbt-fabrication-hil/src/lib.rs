@@ -1,12 +1,31 @@
-//! Real-time hardware-in-the-loop diagnostics: sensor telemetry ingestion,
-//! reduced-order surrogate evaluation and residual monitoring against the
-//! theoretical models (simulator_spec.pdf §2, §4).
+//! Real-time hardware-in-the-loop diagnostics: POSIX shared-memory telemetry
+//! rings, async Tokio ingestion, and residual monitoring against reduced-order
+//! surrogates (simulator_spec.pdf §2, §4).
+//!
+//! * [`telemetry`] — 64-byte `#[repr(C, align(64))]` sensor frames (Type-N
+//!   thermocouples, FBG strain, CCD spectrometer).
+//! * [`ring`] — SPSC lock-free ring over raw memory (`AtomicUsize` head/tail,
+//!   Acquire/Release).
+//! * [`shm`] — `shm_open`/`ftruncate`/`mmap` region allocation.
+//! * [`pipeline`] — Tokio drain task + lock-free stats.
+//! * [`rom`] — `χ²(t) = rᵀΣ⁻¹r` residual scoring against reduced-order models.
 //!
 //! This is the integration crate and depends on every other workspace crate.
-//! Async ingestion, shared-memory ring buffers and PyO3 bindings are
-//! implemented in Stages 4–5 of the blueprint.
 
-#![forbid(unsafe_code)]
+// `shm`/`ring` use raw shared-memory pointers; unsafe is confined to them.
+#![allow(unsafe_code)]
+#![allow(clippy::missing_safety_doc)]
+
+pub mod pipeline;
+pub mod ring;
+pub mod rom;
+#[cfg(unix)]
+pub mod shm;
+pub mod telemetry;
+
+pub use ring::{Consumer, Producer, Region, SpscRing};
+pub use rom::{chi2, reduced_chi2, ReducedOrderModel, ResidualMonitor};
+pub use telemetry::{Channel, Frame, FRAME_VALUES};
 
 /// Canonical crate identifier used by the workbench for topology reporting.
 pub const CRATE_NAME: &str = "shbt-fabrication-hil";

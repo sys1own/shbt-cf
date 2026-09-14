@@ -2,10 +2,23 @@
 //! propagation, dual-channel calorimetric uncertainty and parallel Monte Carlo
 //! sampling (simulator_spec.pdf §2, §4).
 //!
-//! Depends exclusively on `shbt-core-math`. Sampling loops are implemented in
-//! Stage 4 of the blueprint.
+//! * [`distributions`] — marginal distributions and covariance-correlated
+//!   Gaussian blocks (Cholesky-ingested `Σ`).
+//! * [`engine`] — deterministic parallel Monte Carlo over `N ≥ 10⁶`
+//!   evaluations with coverage intervals and per-input sensitivities;
+//!   [`engine::models`] provides the net-power and Coffin–Manson measurands.
+//! * [`random`] — counter-seeded Xoshiro256** for bit-reproducible runs.
+//!
+//! Depends exclusively on `shbt-core-math`.
 
 #![forbid(unsafe_code)]
+
+pub mod distributions;
+pub mod engine;
+pub mod random;
+
+pub use distributions::{Input, Marginal, Sampler};
+pub use engine::{propagate, McReport, Sensitivity};
 
 use shbt_core_math::precision::PrecisionMode;
 

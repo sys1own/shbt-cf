@@ -17,6 +17,8 @@ shbt-dielectric-floquet = { workspace = true }
 shbt-rcwa-optics = { workspace = true }
 shbt-fea-structural = { workspace = true }
 shbt-metrology-gum = { workspace = true }
+libc = "0.2"
+tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros", "sync"] }
 
 [lints]
 workspace = true

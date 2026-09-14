@@ -79,3 +79,13 @@ Verification:
 - Note: the nominal grating `F_z` targets (124.5/138.2) are *not* reproduced by the stated
   Option B inputs (silica prism at 65°): the computed `F_z` is O(1) and the tooth-edge value
   grows with truncation, consistent with the spec's own sharp-corner caveat.
+## Metrology & HIL (Stage 4)
+
+| Crate | Contents |
+|---|---|
+| `shbt-metrology-gum` | GUM Supplement 1 parallel Monte Carlo: `Sampler` ingests scalar marginals (`Normal`/`Uniform`/`LogNormal`) and full covariance-correlated `Correlated` blocks via Cholesky; `propagate` runs `N ≥ 10⁶` evaluations over deterministic per-worker Xoshiro256** sub-streams and returns best estimate, standard uncertainty, 95 % coverage interval and Pearson sensitivities. `models::power_net` / `coffin_manson_cycles` measurands included |
+| `shbt-fabrication-hil` | POSIX `shm_open`/`mmap` regions with `#[repr(C, align(64))]` `RingHeader`; SPSC lock-free ring (`AtomicUsize` head/tail, Acquire/Release, `try_push`/`push`/`send`); Tokio drain task + lock-free `PipelineStats` (atomic counters and a log₂ latency histogram); `ResidualMonitor` computing `χ²/ν = rᵀΣ⁻¹r/ν` per frame against `ReducedOrderModel` surrogates. 64 B `Frame` for Type-N (10 kHz), FBG (10 kHz) and CCD channels |
+
+Benchmark gate (`pipeline::tests::ten_khz_streams_zero_drops_sub_microsecond`):
+61 000 frames across three synthetic channels through the real ring+task — 0
+dropped, 0 mutex/mlock calls, sub-microsecond mean per-frame processing latency.
