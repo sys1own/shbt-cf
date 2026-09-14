@@ -95,7 +95,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install numpy
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy scipy matplotlib
+          if [ -f python/pyproject.toml ]; then pip install -e ./python; fi
       - name: Validate workspace topology is a DAG matching the spec
         run: python3 scripts/check_dep_graph.py
       - name: Python wrapper self-test

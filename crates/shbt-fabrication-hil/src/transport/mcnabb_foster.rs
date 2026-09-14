@@ -56,18 +56,30 @@ impl McNabbFosterSolver {
         let n = self.grid.size;
         let r = 8.314462618;
         let mut theta = self.theta.clone();
-        for i in 0..n { for j in 0..self.trap_populations[i].len() {
-            let trap = &self.trap_populations[i][j];
-            theta[i][j] = (self.theta[i][j] + dt * trap.capture_rate * self.c_l[i]) /
-                (1.0 + dt * (trap.capture_rate * self.c_l[i] + trap.release_rate));
-        }}
+        for (i, trap_layer) in self.trap_populations.iter().enumerate().take(n) {
+            for (j, trap) in trap_layer.iter().enumerate() {
+                theta[i][j] = (self.theta[i][j] + dt * trap.capture_rate * self.c_l[i])
+                    / (1.0 + dt * (trap.capture_rate * self.c_l[i] + trap.release_rate));
+            }
+        }
         let mut next = self.c_l.clone();
         for i in 1..n.saturating_sub(1) {
             let material = &self.profiles[i];
-            let stress_gradient = (self.hydrostatic_stress[i + 1] - self.hydrostatic_stress[i - 1]) / (2.0 * self.grid.dx);
-            let diffusion = material.diffusion_coeff * (self.c_l[i + 1] - 2.0 * self.c_l[i] + self.c_l[i - 1]) / self.grid.dx.powi(2);
-            let drift = material.diffusion_coeff * self.c_l[i] * material.partial_molar_volume * stress_gradient / (r * self.temperature);
-            let trapping: f64 = self.trap_populations[i].iter().enumerate().map(|(j, trap)| trap.density * (theta[i][j] - self.theta[i][j]) / dt).sum();
+            let stress_gradient = (self.hydrostatic_stress[i + 1] - self.hydrostatic_stress[i - 1])
+                / (2.0 * self.grid.dx);
+            let diffusion = material.diffusion_coeff
+                * (self.c_l[i + 1] - 2.0 * self.c_l[i] + self.c_l[i - 1])
+                / self.grid.dx.powi(2);
+            let drift = material.diffusion_coeff
+                * self.c_l[i]
+                * material.partial_molar_volume
+                * stress_gradient
+                / (r * self.temperature);
+            let trapping: f64 = self.trap_populations[i]
+                .iter()
+                .enumerate()
+                .map(|(j, trap)| trap.density * (theta[i][j] - self.theta[i][j]) / dt)
+                .sum();
             next[i] += dt * (diffusion - drift - trapping);
         }
         self.c_l = next;
@@ -76,9 +88,16 @@ impl McNabbFosterSolver {
 
     /// Return the lattice-concentration partition factor across an interface.
     pub fn chemical_potential_partition(&self, left: usize, right: usize) -> f64 {
-        let a = &self.profiles[left]; let b = &self.profiles[right];
-        (b.solubility / a.solubility) * ((b.partial_molar_volume * self.hydrostatic_stress[right] - a.partial_molar_volume * self.hydrostatic_stress[left]) / (r_const() * self.temperature)).exp()
+        let a = &self.profiles[left];
+        let b = &self.profiles[right];
+        (b.solubility / a.solubility)
+            * ((b.partial_molar_volume * self.hydrostatic_stress[right]
+                - a.partial_molar_volume * self.hydrostatic_stress[left])
+                / (r_const() * self.temperature))
+                .exp()
     }
 }
 
-fn r_const() -> f64 { 8.314462618 }
+fn r_const() -> f64 {
+    8.314462618
+}
