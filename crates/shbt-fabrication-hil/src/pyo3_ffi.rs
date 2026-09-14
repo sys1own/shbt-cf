@@ -12,11 +12,146 @@ use crate::ring::SpscRing;
 use crate::telemetry::{Channel, Frame};
 use numpy::ndarray::ArrayView1;
 use numpy::{PyArray1, PyArray2, PyArrayMethods, PyReadonlyArray2};
+use numpy::ndarray::Array2;
 use pyo3::prelude::*;
 use shbt_fea_structural::belleville::force_per_disc;
 use shbt_metrology_gum::distributions::{Input, Marginal, Sampler};
 use shbt_metrology_gum::engine::{self, models};
 use shbt_rcwa_optics::material::beat_frequency;
+use rug::Float;
+
+#[pyclass]
+pub struct PyScreeningKernel {
+    inner: crate::physics::screening::ScreeningKernel,
+}
+
+#[pymethods]
+impl PyScreeningKernel {
+    #[new]
+    fn new(g_ef: f64, n_atom: f64, temp: f64, precision: Option<u32>) -> Self {
+        let bits = precision.unwrap_or(512);
+        Self { inner: crate::physics::screening::ScreeningKernel::new(
+            Float::with_val(bits, g_ef), Float::with_val(bits, n_atom), Float::with_val(bits, temp),
+        ) }
+    }
+
+    fn get_screening_potential(&self) -> f64 { self.inner.screening_potential.to_f64() }
+
+    fn calculate_enhancement(&self, energy_ev: f64) -> f64 {
+        let energy = Float::with_val(self.inner.screening_potential.prec(), energy_ev);
+        self.inner.calculate_enhancement_factor(&energy).to_f64()
+    }
+}
+
+#[pyclass(name = "ConformalKineticsSolver")]
+pub struct PyConformalKineticsSolver {
+    inner: crate::physics::cft_kinetics::ConformalKineticsSolver,
+}
+
+#[pymethods]
+impl PyConformalKineticsSolver {
+    #[new]
+    fn new(precision: u32) -> Self {
+        Self { inner: crate::physics::cft_kinetics::ConformalKineticsSolver::new(precision) }
+    }
+
+    /// Integrate a polynomial whose coefficients are ordered from constant to highest power.
+    fn integrate_polynomial(&self, py: Python<'_>, coefficients: Vec<f64>, lower: f64, upper: f64) -> f64 {
+        let solver = &self.inner;
+        py.allow_threads(|| {
+            let precision = solver.precision;
+            let coefficients = coefficients.clone();
+            let value = solver.integrate_reaction_rate(|x| {
+                coefficients.iter().rev().fold(Float::with_val(precision, 0), |acc, coefficient| {
+                    acc * x + Float::with_val(precision, *coefficient)
+                })
+            }, &Float::with_val(precision, lower), &Float::with_val(precision, upper));
+            value.to_f64()
+        })
+    }
+}
+
+#[pyclass(name = "McNabbFosterSolver")]
+pub struct PyMcNabbFosterSolver {
+    inner: crate::transport::mcnabb_foster::McNabbFosterSolver,
+}
+
+#[pymethods]
+impl PyMcNabbFosterSolver {
+    #[new]
+    #[pyo3(signature = (dx, diffusion_coeff, solubility, partial_molar_volume, c_l, hydrostatic_stress, trap_density, capture_rate, release_rate, temperature, interface_boundaries))]
+    fn new(
+        dx: f64,
+        diffusion_coeff: Vec<f64>,
+        solubility: Vec<f64>,
+        partial_molar_volume: Vec<f64>,
+        c_l: Vec<f64>,
+        hydrostatic_stress: Vec<f64>,
+        trap_density: Vec<Vec<f64>>,
+        capture_rate: Vec<Vec<f64>>,
+        release_rate: Vec<Vec<f64>>,
+        temperature: f64,
+        interface_boundaries: Vec<usize>,
+    ) -> PyResult<Self> {
+        let size = c_l.len();
+        let valid_profiles = diffusion_coeff.len() == size
+            && solubility.len() == size
+            && partial_molar_volume.len() == size
+            && hydrostatic_stress.len() == size;
+        let valid_traps = trap_density.len() == size
+            && capture_rate.len() == size
+            && release_rate.len() == size
+            && trap_density.iter().zip(&capture_rate).zip(&release_rate)
+                .all(|((density, capture), release)| density.len() == capture.len() && density.len() == release.len());
+        if dx <= 0.0 || temperature <= 0.0 || !valid_profiles || !valid_traps {
+            return Err(pyo3::exceptions::PyValueError::new_err("invalid McNabb-Foster dimensions or parameters"));
+        }
+        let profiles = diffusion_coeff.into_iter().zip(solubility).zip(partial_molar_volume)
+            .map(|((diffusion_coeff, solubility), partial_molar_volume)|
+                crate::transport::mcnabb_foster::MaterialProfile { diffusion_coeff, solubility, partial_molar_volume })
+            .collect();
+        let trap_populations: Vec<Vec<crate::transport::mcnabb_foster::TrapState>> = trap_density.into_iter().zip(capture_rate).zip(release_rate)
+            .map(|((density, capture), release)| density.into_iter().zip(capture).zip(release)
+                .map(|((density, capture_rate), release_rate)| crate::transport::mcnabb_foster::TrapState { density, capture_rate, release_rate })
+                .collect())
+            .collect();
+        let theta = trap_populations.iter().map(|traps| vec![0.0; traps.len()]).collect();
+        Ok(Self { inner: crate::transport::mcnabb_foster::McNabbFosterSolver {
+            grid: crate::transport::mcnabb_foster::TransportGrid { dx, size, interface_boundaries },
+            profiles, trap_populations, c_l, theta, hydrostatic_stress, temperature,
+        } })
+    }
+
+    fn step(&mut self, py: Python<'_>, dt: f64) -> PyResult<Vec<f64>> {
+        if dt <= 0.0 { return Err(pyo3::exceptions::PyValueError::new_err("dt must be positive")); }
+        py.allow_threads(|| self.inner.step(dt));
+        Ok(self.inner.c_l.clone())
+    }
+
+    fn concentrations(&self) -> Vec<f64> { self.inner.c_l.clone() }
+}
+
+#[pyclass(name = "Rcwa3dSolver")]
+pub struct PyRcwa3dSolver {
+    inner: crate::optics::rcwa_3d::Rcwa3dSolver,
+}
+
+#[pymethods]
+impl PyRcwa3dSolver {
+    #[new]
+    fn new(harmonics_x: usize, harmonics_y: usize, wavelength: f64) -> PyResult<Self> {
+        if harmonics_x == 0 || harmonics_y == 0 || wavelength <= 0.0 {
+            return Err(pyo3::exceptions::PyValueError::new_err("harmonics and wavelength must be positive"));
+        }
+        Ok(Self { inner: crate::optics::rcwa_3d::Rcwa3dSolver { harmonics_x, harmonics_y, wavelength } })
+    }
+
+    fn build_system_matrix<'py>(&self, py: Python<'py>, permittivity: PyReadonlyArray2<'py, num_complex::Complex64>) -> Bound<'py, PyArray2<num_complex::Complex64>> {
+        let profile: Array2<num_complex::Complex64> = permittivity.as_array().to_owned();
+        let matrix = py.allow_threads(|| self.inner.build_system_matrix(&profile));
+        PyArray2::from_owned_array(py, matrix)
+    }
+}
 
 /// SPSC telemetry ring exposed to Python; the slot region is shared
 /// zero-copy with NumPy.
@@ -274,6 +409,10 @@ fn column_means(x: PyReadonlyArray2<f64>) -> Vec<f64> {
 #[pymodule]
 fn shbt_cf_native(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyRing>()?;
+    m.add_class::<PyScreeningKernel>()?;
+    m.add_class::<PyConformalKineticsSolver>()?;
+    m.add_class::<PyMcNabbFosterSolver>()?;
+    m.add_class::<PyRcwa3dSolver>()?;
     m.add_function(wrap_pyfunction!(beat_hz, m)?)?;
     m.add_function(wrap_pyfunction!(disc_force, m)?)?;
     m.add_function(wrap_pyfunction!(chi2, m)?)?;

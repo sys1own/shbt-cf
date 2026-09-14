@@ -23,6 +23,7 @@ shbt-dielectric-floquet = { path = "crates/shbt-dielectric-floquet", version = "
 shbt-rcwa-optics = { path = "crates/shbt-rcwa-optics", version = "0.1.0" }
 shbt-fea-structural = { path = "crates/shbt-fea-structural", version = "0.1.0" }
 shbt-metrology-gum = { path = "crates/shbt-metrology-gum", version = "0.1.0" }
+rug = { version = "1.27", default-features = false, features = ["float"] }
 
 [workspace.lints.rust]
 unsafe_code = "warn"

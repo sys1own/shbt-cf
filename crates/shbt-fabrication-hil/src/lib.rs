@@ -17,9 +17,12 @@
 #![allow(clippy::missing_safety_doc)]
 
 pub mod ffi;
+pub mod optics;
 pub mod pipeline;
+pub mod physics;
 pub mod ring;
 pub mod rom;
+pub mod transport;
 #[cfg(unix)]
 pub mod shm;
 pub mod telemetry;

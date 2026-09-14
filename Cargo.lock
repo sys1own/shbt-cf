@@ -764,8 +764,11 @@ name = "shbt-fabrication-hil"
 version = "0.1.0"
 dependencies = [
  "libc",
+ "ndarray",
+ "num-complex",
  "numpy",
  "pyo3",
+ "rug",
  "shbt-core-math",
  "shbt-dielectric-floquet",
  "shbt-fea-structural",
