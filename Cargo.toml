@@ -1,3 +1,19 @@
+[package]
+name = "shbt-cf"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.84"
+license = "MIT"
+repository = "https://github.com/sys1own/shbt-cf"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "shbt_cf"
+path = "src/main.rs"
+
 [workspace]
 resolver = "2"
 members = [
