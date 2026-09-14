@@ -2,13 +2,18 @@ use rug::Float;
 
 /// High-precision Thomas-Fermi screening and d-d Sommerfeld factors.
 pub struct ScreeningKernel {
+    /// Alloy density of states at the Fermi level.
     pub density_of_states_ef: Float,
+    /// Atomic number density in atoms per cubic metre.
     pub atomic_density: Float,
+    /// Material temperature in kelvin.
     pub temperature: Float,
+    /// Computed electron-screening potential in electronvolts.
     pub screening_potential: Float,
 }
 
 impl ScreeningKernel {
+    /// Construct a screening kernel and compute its Thomas-Fermi potential.
     pub fn new(g_ef: Float, n_atom: Float, temp: Float) -> Self {
         let precision = g_ef.prec();
         let mut kernel = Self {
@@ -33,6 +38,7 @@ impl ScreeningKernel {
         self.screening_potential = (charge.clone() * charge / denominator) / ev_to_joule;
     }
 
+    /// Calculate the screened Sommerfeld parameter at a centre-of-mass energy.
     pub fn calculate_effective_sommerfeld(&self, energy_ev: &Float) -> Float {
         let prec = energy_ev.prec();
         let energy_kev = energy_ev / Float::with_val(prec, 1000);
@@ -43,6 +49,7 @@ impl ScreeningKernel {
         eta_0 * ratio.sqrt()
     }
 
+    /// Calculate the screening enhancement relative to the unscreened barrier.
     pub fn calculate_enhancement_factor(&self, energy_ev: &Float) -> Float {
         let prec = energy_ev.prec();
         let energy_kev = energy_ev / Float::with_val(prec, 1000);

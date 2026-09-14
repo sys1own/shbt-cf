@@ -17,11 +17,14 @@
 #![allow(clippy::missing_safety_doc)]
 
 pub mod ffi;
+/// 3D periodic grating optics kernels.
 pub mod optics;
 pub mod pipeline;
+/// High-precision screening and reaction-rate kernels.
 pub mod physics;
 pub mod ring;
 pub mod rom;
+/// Stress-assisted deuterium transport kernels.
 pub mod transport;
 #[cfg(unix)]
 pub mod shm;

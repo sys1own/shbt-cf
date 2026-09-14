@@ -1,16 +1,22 @@
 use rug::Float;
 
+/// Adaptive 15-point Gauss-Kronrod reaction-rate integrator.
 pub struct ConformalKineticsSolver {
+    /// MPFR precision in bits.
     pub precision: u32,
+    /// Absolute local quadrature tolerance.
     pub absolute_tolerance: f64,
+    /// Maximum recursive subdivision depth.
     pub max_depth: usize,
 }
 
 impl ConformalKineticsSolver {
+    /// Construct an integrator at the requested MPFR precision.
     pub fn new(precision: u32) -> Self {
         Self { precision, absolute_tolerance: 1e-15, max_depth: 20 }
     }
 
+    /// Integrate `kernel_fn` over the closed energy interval.
     pub fn integrate_reaction_rate<F>(&self, kernel_fn: F, lower: &Float, upper: &Float) -> Float
     where F: Fn(&Float) -> Float {
         let (value, _) = self.integrate(&kernel_fn, lower, upper, self.max_depth);
