@@ -5,10 +5,11 @@ from shbt_cf.workspace import CRATES, Crate, Workspace, WorkspaceError, build_or
 
 
 class TopologyTests(unittest.TestCase):
-    def test_six_crates(self):
-        self.assertEqual(len(CRATES), 6)
+    def test_seven_crates(self):
+        self.assertEqual(len(CRATES), 7)
 
-    def test_core_math_is_root(self):
+    def test_root_and_core_math_are_independent(self):
+        self.assertEqual(CRATES["shbt-cf"].workspace_deps, frozenset())
         self.assertEqual(CRATES["shbt-core-math"].workspace_deps, frozenset())
 
     def test_build_order_is_dependency_first(self):
@@ -17,7 +18,7 @@ class TopologyTests(unittest.TestCase):
         for crate in CRATES.values():
             for dep in crate.workspace_deps:
                 self.assertLess(pos[dep], pos[crate.name])
-        self.assertEqual(order[0], "shbt-core-math")
+        self.assertEqual(order[0], "shbt-cf")
         self.assertEqual(order[-1], "shbt-fabrication-hil")
 
     def test_cycle_detected(self):

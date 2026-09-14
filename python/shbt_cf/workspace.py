@@ -38,6 +38,7 @@ class Crate:
 CRATES: dict[str, Crate] = {
     c.name: c
     for c in (
+        Crate("shbt-cf"),
         Crate("shbt-core-math"),
         Crate("shbt-dielectric-floquet", frozenset({"shbt-core-math"})),
         Crate("shbt-rcwa-optics", frozenset({"shbt-core-math"})),
