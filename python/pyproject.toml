@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=68"]
-build-backend = "setuptools.build_meta"
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
 
 [project]
 name = "shbt-cf"
@@ -13,6 +13,5 @@ dependencies = []
 [project.scripts]
 shbt-cf = "shbt_cf.__main__:main"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["shbt_cf*"]
+[tool.maturin]
+manifest-path = "../Cargo.toml"
