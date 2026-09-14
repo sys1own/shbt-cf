@@ -21,16 +21,19 @@ impl Complex64 {
     }
 
     #[inline]
+    #[allow(clippy::should_implement_trait)]
     pub fn add(self, rhs: Self) -> Self {
         Self::new(self.re + rhs.re, self.im + rhs.im)
     }
 
     #[inline]
+    #[allow(clippy::should_implement_trait)]
     pub fn sub(self, rhs: Self) -> Self {
         Self::new(self.re - rhs.re, self.im - rhs.im)
     }
 
     #[inline]
+    #[allow(clippy::should_implement_trait)]
     pub fn mul(self, rhs: Self) -> Self {
         Self::new(
             self.re * rhs.re - self.im * rhs.im,
@@ -39,6 +42,7 @@ impl Complex64 {
     }
 
     #[inline]
+    #[allow(clippy::should_implement_trait)]
     pub fn div(self, rhs: Self) -> Self {
         let denom = rhs.re * rhs.re + rhs.im * rhs.im;
         if denom == 0.0 {

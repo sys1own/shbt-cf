@@ -1,14 +1,14 @@
-pub mod types;
-pub mod rcwa_3d;
 pub mod floquet_dielectric;
 pub mod quadrature_precision;
+pub mod rcwa_3d;
 pub mod transport_controller;
+pub mod types;
 
 pub use types::Complex64;
 
-use rcwa_3d::{GratingLayer, Rcwa3dSolver};
 use floquet_dielectric::FloquetMatrixInverter;
 use quadrature_precision::{AdaptiveGaussKronrod, Float512};
+use rcwa_3d::{GratingLayer, Rcwa3dSolver};
 use transport_controller::{DeuteriumTransport3D, StateSpaceMpc};
 
 #[derive(Debug, Clone, Copy)]
@@ -35,8 +35,16 @@ pub fn run_simulation() -> SimulationSummary {
         eps_grid,
     };
 
-    let eta_785 = rcwa_785.solve_field_enhancement(&[layer.clone()], Complex64::new(1.0, 0.0), Complex64::new(1.0, 0.0));
-    let eta_802 = rcwa_802.solve_field_enhancement(&[layer], Complex64::new(1.0, 0.0), Complex64::new(1.0, 0.0));
+    let eta_785 = rcwa_785.solve_field_enhancement(
+        std::slice::from_ref(&layer),
+        Complex64::new(1.0, 0.0),
+        Complex64::new(1.0, 0.0),
+    );
+    let eta_802 = rcwa_802.solve_field_enhancement(
+        std::slice::from_ref(&layer),
+        Complex64::new(1.0, 0.0),
+        Complex64::new(1.0, 0.0),
+    );
     let eta_spp = 0.5 * (eta_785 + eta_802);
 
     let floquet = FloquetMatrixInverter::new(9, 7, 8.328064e12, 1.5e7, 9.109e-31);
@@ -54,11 +62,7 @@ pub fn run_simulation() -> SimulationSummary {
     ];
     let raw_screening = floquet.compute_effective_screening(0.28e-10, q_vec, &g_vectors);
     let u_eff = 350.0 + (raw_screening - 350.0).clamp(-0.5, 0.5);
-    let v_driven = if raw_screening > 0.0 {
-        -298.57
-    } else {
-        -298.57
-    };
+    let v_driven = -298.57;
 
     let integrator = AdaptiveGaussKronrod::new(18, 1e-12);
     let gamow = |x: Float512| {
@@ -66,7 +70,11 @@ pub fn run_simulation() -> SimulationSummary {
         let attenuation = -(v * v) / 2.0;
         Float512::from_f64((attenuation).exp())
     };
-    let (integral, _) = integrator.integrate(gamow, Float512::from_ratio(0, 1), Float512::from_ratio(1, 1));
+    let (integral, _) = integrator.integrate(
+        gamow,
+        Float512::from_ratio(0, 1),
+        Float512::from_ratio(1, 1),
+    );
     let _ = integral;
 
     let mut concentration = vec![vec![vec![1.0; 8]; 8]; 8];
@@ -86,10 +94,7 @@ pub fn run_simulation() -> SimulationSummary {
         vec![0.10, 0.40],
         vec![0.00, 0.50],
     ];
-    let c = vec![
-        vec![1.0, 0.0, 0.0, 0.0],
-        vec![0.0, 0.0, 1.0, 0.0],
-    ];
+    let c = vec![vec![1.0, 0.0, 0.0, 0.0], vec![0.0, 0.0, 1.0, 0.0]];
     let controller = StateSpaceMpc::new(a, b, c, 12);
     let state = [1.0, 0.75, 0.5, 0.25];
     let targets = [0.8, 0.9];

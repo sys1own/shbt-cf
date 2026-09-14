@@ -8,6 +8,7 @@ pub struct FloquetMatrixInverter {
     pub m_eff: f64,
 }
 
+#[allow(clippy::needless_range_loop)]
 impl FloquetMatrixInverter {
     pub fn new(
         num_g: usize,

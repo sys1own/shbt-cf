@@ -12,6 +12,7 @@ pub struct DeuteriumTransport3D {
     pub temp: f64,
 }
 
+#[allow(clippy::too_many_arguments)]
 impl DeuteriumTransport3D {
     pub fn new(
         nx: usize,
@@ -47,9 +48,12 @@ impl DeuteriumTransport3D {
         for i in 1..(self.nx - 1) {
             for j in 1..(self.ny - 1) {
                 for k in 1..(self.nz - 1) {
-                    let d2c_dx2 = (c_l[i + 1][j][k] - 2.0 * c_l[i][j][k] + c_l[i - 1][j][k]) / (self.dx * self.dx);
-                    let d2c_dy2 = (c_l[i][j + 1][k] - 2.0 * c_l[i][j][k] + c_l[i][j - 1][k]) / (self.dy * self.dy);
-                    let d2c_dz2 = (c_l[i][j][k + 1] - 2.0 * c_l[i][j][k] + c_l[i][j][k - 1]) / (self.dz * self.dz);
+                    let d2c_dx2 = (c_l[i + 1][j][k] - 2.0 * c_l[i][j][k] + c_l[i - 1][j][k])
+                        / (self.dx * self.dx);
+                    let d2c_dy2 = (c_l[i][j + 1][k] - 2.0 * c_l[i][j][k] + c_l[i][j - 1][k])
+                        / (self.dy * self.dy);
+                    let d2c_dz2 = (c_l[i][j][k + 1] - 2.0 * c_l[i][j][k] + c_l[i][j][k - 1])
+                        / (self.dz * self.dz);
                     let laplacian = d2c_dx2 + d2c_dy2 + d2c_dz2;
 
                     let d_sigma_x = (sigma_m[i + 1][j][k] - sigma_m[i - 1][j][k]) / (2.0 * self.dx);
@@ -72,6 +76,7 @@ pub struct StateSpaceMpc {
     pub horizon: usize,
 }
 
+#[allow(clippy::needless_range_loop)]
 impl StateSpaceMpc {
     pub fn new(
         a_matrix: Vec<Vec<f64>>,
@@ -123,10 +128,7 @@ pub fn default_transport_controller() -> (DeuteriumTransport3D, StateSpaceMpc) {
         vec![0.1, 0.4],
         vec![0.0, 0.5],
     ];
-    let c = vec![
-        vec![1.0, 0.0, 0.0, 0.0],
-        vec![0.0, 0.0, 1.0, 0.0],
-    ];
+    let c = vec![vec![1.0, 0.0, 0.0, 0.0], vec![0.0, 0.0, 1.0, 0.0]];
     let mpc = StateSpaceMpc::new(a, b, c, 12);
 
     (transport, mpc)

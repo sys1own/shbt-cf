@@ -744,6 +744,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1bc711410fbe7399f390ca1c3b60ad0f53f80e95c5eb935e52268a0e2cd49acc"
 
 [[package]]
+name = "shbt-cf"
+version = "0.1.0"
+
+[[package]]
 name = "shbt-core-math"
 version = "0.1.0"
 dependencies = [

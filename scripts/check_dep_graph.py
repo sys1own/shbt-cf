@@ -19,6 +19,7 @@ from collections import deque
 from pathlib import Path
 
 EXPECTED_TOPOLOGY: dict[str, frozenset[str]] = {
+    "shbt-cf": frozenset(),
     "shbt-core-math": frozenset(),
     "shbt-dielectric-floquet": frozenset({"shbt-core-math"}),
     "shbt-rcwa-optics": frozenset({"shbt-core-math"}),

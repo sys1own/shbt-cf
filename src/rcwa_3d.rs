@@ -91,8 +91,8 @@ impl Rcwa3dSolver {
                 for cell in row {
                     let norm_eps = cell.norm_sq().sqrt();
                     if norm_eps > 0.0 {
-                        let enhancement = (eps_superstrate.re / norm_eps)
-                            * (1.0 + 4.0 * (kx[0] / k0).powi(2));
+                        let enhancement =
+                            (eps_superstrate.re / norm_eps) * (1.0 + 4.0 * (kx[0] / k0).powi(2));
                         if enhancement > max_enhancement {
                             max_enhancement = enhancement;
                         }

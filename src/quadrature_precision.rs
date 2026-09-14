@@ -53,7 +53,11 @@ impl Float512 {
     pub fn to_f64(&self) -> f64 {
         let mut val = (self.mantissa[7] >> 11) as f64 / (1u64 << 52) as f64;
         val *= 2.0f64.powi(self.exponent as i32);
-        if self.sign { -val } else { val }
+        if self.sign {
+            -val
+        } else {
+            val
+        }
     }
 
     pub fn add(&self, rhs: &Self) -> Self {
