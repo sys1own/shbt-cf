@@ -1,5 +1,7 @@
-//! Temperature-dependent material laws shared by the Belleville and thin-film
-//! models: linear `E(T)` (cf.pdf Eq. 174) and linear `α(T)` (cf.pdf Eq. 215).
+//! Material state equations and structural compatibility laws.
+
+use num_complex::Complex64;
+use std::f64::consts::PI;
 
 /// Absolute temperature of 0 °C in kelvin.
 pub const KELVIN_OFFSET: f64 = 273.15;
@@ -23,6 +25,172 @@ pub const K_STACK: f64 = 5.0e6;
 pub const DL_NET: f64 = 20.1e-6;
 /// Plastic strain ceiling for the 44,820-cycle fatigue target.
 pub const PLASTIC_STRAIN_CEILING: f64 = 0.0004805;
+
+/// Fundamental inputs for a single crystalline phase.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct AbInitioPhase {
+    /// Reference molar volume [m³/mol].
+    pub molar_volume_0: f64,
+    /// Zero-pressure bulk modulus [Pa].
+    pub bulk_modulus_0: f64,
+    /// Pressure derivative of the bulk modulus.
+    pub bulk_modulus_prime: f64,
+    /// Mass density at the reference state [kg/m³].
+    pub density: f64,
+    /// Longitudinal sound speed [m/s].
+    pub sound_speed: f64,
+    /// Grüneisen parameter.
+    pub gruneisen: f64,
+    /// Effective carrier density [m⁻³].
+    pub carrier_density: f64,
+    /// Momentum relaxation time [s].
+    pub relaxation_time: f64,
+    /// Static relative dielectric constant.
+    pub dielectric_background: f64,
+}
+
+/// Dynamic tensors derived from one phase state.
+#[derive(Clone, Debug, PartialEq)]
+pub struct MaterialTensors {
+    /// Volumetric compression `V/V₀`.
+    pub volume_ratio: f64,
+    /// Debye temperature [K].
+    pub debye_temperature: f64,
+    /// Debye heat capacity [J/(m³ K)].
+    pub heat_capacity: f64,
+    /// Isotropic elastic stiffness in Voigt order [Pa].
+    pub elastic: [[f64; 6]; 6],
+    /// Isotropic thermal conductivity tensor [W/(m K)].
+    pub thermal: [[f64; 3]; 3],
+    /// Drude dielectric tensor at the supplied angular frequency.
+    pub dielectric: [[Complex64; 3]; 3],
+}
+
+const HBAR: f64 = 1.054_571_817e-34;
+const K_B: f64 = 1.380_649e-23;
+const E_CHARGE: f64 = 1.602_176_634e-19;
+const EPSILON_0: f64 = 8.854_187_812_8e-12;
+const M_E: f64 = 9.109_383_701_5e-31;
+const AVOGADRO: f64 = 6.022_140_76e23;
+
+fn birch_murnaghan_pressure(volume_ratio: f64, phase: AbInitioPhase) -> f64 {
+    let eta = volume_ratio.powf(-1.0 / 3.0);
+    1.5 * phase.bulk_modulus_0
+        * (eta.powi(7) - eta.powi(5))
+        * (1.0 + 0.75 * (phase.bulk_modulus_prime - 4.0) * (eta * eta - 1.0))
+}
+
+/// Solves the third-order Birch-Murnaghan equation for `V/V₀`.
+pub fn birch_murnaghan_volume_ratio(pressure: f64, phase: AbInitioPhase) -> f64 {
+    let mut volume = 1.0;
+    for _ in 0..64 {
+        let residual = birch_murnaghan_pressure(volume, phase) - pressure;
+        if residual.abs() <= phase.bulk_modulus_0 * 1e-13 {
+            break;
+        }
+        let step = volume * 1e-6;
+        let derivative = (birch_murnaghan_pressure(volume + step, phase)
+            - birch_murnaghan_pressure(volume - step, phase))
+            / (2.0 * step);
+        volume = (volume - residual / derivative).clamp(0.2, 2.0);
+    }
+    volume
+}
+
+fn debye_integral(x_max: f64) -> f64 {
+    let n = 512usize;
+    let h = x_max / n as f64;
+    (0..=n)
+        .map(|i| {
+            let x = i as f64 * h;
+            let term = if x == 0.0 {
+                1.0
+            } else {
+                x.powi(4) * (-x).exp() / (1.0 - (-x).exp()).powi(2)
+            };
+            let weight = if i == 0 || i == n {
+                1.0
+            } else if i % 2 == 0 {
+                2.0
+            } else {
+                4.0
+            };
+            weight * term
+        })
+        .sum::<f64>()
+        * h
+        / 3.0
+}
+
+/// Computes elastic, thermal and dielectric tensors from state equations.
+pub fn solve_ab_initio_material_tensors(
+    temperature: f64,
+    pressure: f64,
+    angular_frequency: f64,
+    phase: AbInitioPhase,
+) -> MaterialTensors {
+    assert!(temperature > 0.0 && phase.bulk_modulus_0 > 0.0);
+    let volume_ratio = birch_murnaghan_volume_ratio(pressure, phase);
+    let density = phase.density / volume_ratio;
+    let debye_temperature = HBAR
+        * phase.sound_speed
+        * (6.0 * PI * PI * AVOGADRO / phase.molar_volume_0).powf(1.0 / 3.0)
+        / K_B;
+    let x_max = (debye_temperature / temperature).min(80.0);
+    let heat_capacity = 9.0 * density / (phase.density * phase.molar_volume_0 / AVOGADRO)
+        * K_B
+        * (temperature / debye_temperature).powi(3)
+        * debye_integral(x_max);
+    let shear = density * phase.sound_speed * phase.sound_speed;
+    let bulk = phase.bulk_modulus_0 * volume_ratio.powf(-phase.bulk_modulus_prime);
+    let lambda = bulk - 2.0 * shear / 3.0;
+    let mut elastic = [[0.0; 6]; 6];
+    for (i, row) in elastic.iter_mut().enumerate().take(3) {
+        row[i] = lambda + 2.0 * shear;
+    }
+    for (i, row) in elastic.iter_mut().enumerate().take(3) {
+        for (j, value) in row.iter_mut().enumerate().take(3) {
+            if i != j {
+                *value = lambda;
+            }
+        }
+    }
+    for (i, row) in elastic.iter_mut().enumerate().skip(3) {
+        row[i] = shear;
+    }
+    let debye_rate = phase.gruneisen
+        * phase.gruneisen
+        * K_B
+        * temperature
+        * (2.0 * PI * temperature / debye_temperature).powi(2)
+        / (density * phase.sound_speed * phase.sound_speed * phase.relaxation_time.max(1e-30));
+    let conductivity =
+        heat_capacity * phase.sound_speed * phase.sound_speed / (3.0 * debye_rate.max(1e-30));
+    let mut thermal = [[0.0; 3]; 3];
+    for (i, row) in thermal.iter_mut().enumerate() {
+        row[i] = conductivity;
+    }
+    let plasma_frequency = (phase.carrier_density * E_CHARGE * E_CHARGE / (EPSILON_0 * M_E)).sqrt();
+    let denominator = Complex64::new(
+        1.0,
+        -1.0 / (angular_frequency * phase.relaxation_time).max(1e-30),
+    );
+    let epsilon = Complex64::new(phase.dielectric_background, 0.0)
+        - Complex64::new(plasma_frequency * plasma_frequency, 0.0)
+            / (Complex64::new(angular_frequency * angular_frequency, 0.0) * denominator);
+    let mut dielectric = [[Complex64::new(0.0, 0.0); 3]; 3];
+    for (i, row) in dielectric.iter_mut().enumerate() {
+        row[i] = epsilon;
+    }
+    MaterialTensors {
+        volume_ratio,
+        debye_temperature,
+        heat_capacity,
+        elastic,
+        thermal,
+        dielectric,
+    }
+}
 
 /// Structural result used by the thermomechanical integrity gate.
 #[derive(Debug, Clone, Copy, PartialEq)]

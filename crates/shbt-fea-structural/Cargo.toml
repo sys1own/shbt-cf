@@ -13,6 +13,7 @@ path = "src/lib.rs"
 
 [dependencies]
 shbt-core-math = { workspace = true }
+num-complex = "0.4"
 
 [lints]
 workspace = true

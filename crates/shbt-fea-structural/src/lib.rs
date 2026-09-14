@@ -17,15 +17,17 @@
 
 pub mod belleville;
 pub mod disc_fe;
+pub mod kinetics;
 pub mod material;
 pub mod quadrature;
 pub mod stoney;
+pub mod variational;
 
 pub use belleville::{DiscSpring, DiscStack, StackLayout};
 pub use disc_fe::ConicalDiscFe;
 pub use material::{
-    validate_structural_design, FeaOutput, A_CONTACT, DL_NET, D_CORE, F_MAX, F_MIN, K_STACK,
-    PLASTIC_STRAIN_CEILING,
+    solve_ab_initio_material_tensors, validate_structural_design, AbInitioPhase, FeaOutput,
+    MaterialTensors, A_CONTACT, DL_NET, D_CORE, F_MAX, F_MIN, K_STACK, PLASTIC_STRAIN_CEILING,
 };
 pub use stoney::FilmOnSubstrate;
 

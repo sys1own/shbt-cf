@@ -14,10 +14,12 @@
 #![forbid(unsafe_code)]
 
 pub mod distributions;
+pub mod dual;
 pub mod engine;
 pub mod random;
 
 pub use distributions::{Input, Marginal, Sampler};
+pub use dual::{propagate_uncertainty_gum, DualNum, GumReport};
 pub use engine::{propagate, McReport, Sensitivity};
 
 use shbt_core_math::precision::PrecisionMode;
