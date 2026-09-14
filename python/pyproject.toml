@@ -14,4 +14,4 @@ dependencies = []
 shbt-cf = "shbt_cf.__main__:main"
 
 [tool.maturin]
-manifest-path = "../Cargo.toml"
+manifest-path = "../crates/shbt-fabrication-hil/Cargo.toml"
