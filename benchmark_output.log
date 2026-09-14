@@ -1,0 +1,16 @@
+SHBT-CF Integrated Simulation Pipeline
+===================================
+SPP field enhancement eta_SPP: 975115859957014331392.000000
+Effective screening U_eff: 349.50 eV
+Screened deuteron pair energy V_driven: -298.57 eV
+Gamow tunneling integral: evaluated with Float512 / G7-K15
+Transport step: 3D diffusion + stress-gradient electromigration
+MPC action: laser = -0.002400, cooling = -0.018000
+
+Energy Balance Table
+-------------------
+P_th,ref =  2911.40 W
+P_TEG    =   418.43 W
+P_support=   386.67 W
+P_net    =    31.76 W
+B_lat    =  0.9999996
