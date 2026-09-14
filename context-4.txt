@@ -1,0 +1,40 @@
+Context-4: Updated SHBT domain parameter sets for metallurgical fatigue, Floquet dielectric inversion, and multi-scale volume integration.
+
+Domain 1: Metallurgical low-cycle thermal fatigue parameters
+- Material system: Ni-6Cu / Sn-0.7Cu-0.05Bi with graded Ni/Cu compliance layer
+- Operational thermal swing: ΔT = 256.85 K (20 C to 276.85 C)
+- Elastic modulus: 128.5 GPa
+- Yield strength: 380 MPa
+- σ'_f = 545 MPa, ε'_f = 0.320, b = -0.082, c = -0.560
+- Chaboche hardening: C1 = 42.5 GPa, γ1 = 450; C2 = 12.8 GPa, γ2 = 85
+- Plastic strain amplitude: Δεp/2 = 0.0004940236
+- Elastic strain amplitude: Δεe/2 = 0.0016437048
+- Total strain amplitude at Nf = 52,400: ~0.002138
+- Design life target: Nf >= 44,820 cycles
+
+Domain 2: Reciprocal-space Floquet-Adler-Wiser dielectric parameters
+- Dual optical beat wavelength: λ1 = 785.0 nm; λ2 = 802.5 nm
+- Beat frequency: ~8.328 THz
+- Interaction radius: r_d = 0.28 Å = 2.8e-11 m
+- Effective driving potential: U_eff = 350.0 eV
+- Driven potential: V_driven = -298.57 eV
+- Bare interaction potential: V_bare ≈ 51.43 eV
+- Local SPP field enhancement: F_z = 21.45
+- Floquet order: m = ±2
+- Carrier density: ne = 4.85e28 m^-3
+
+Domain 3: Multi-scale reaction volume matrix
+- Active volume: V_active = 2.53e-10 m^3
+- Metal volume: V_metal = 2.875e-12 m^3
+- Unit domain volume: V_D = 1.0e-24 m^3
+- Total active domains: N_D = 2.53e14
+- Gross thermal power: P_th = 2911.40 W
+- Optical skin depth: δ_skin ≈ 13.0 nm
+- Coverage factor: η = 0.01136
+
+Required simulator outputs
+- verify_fatigue_life() -> total strain amplitude ≈ 0.002138 and Nf >= 52,400
+- compute_beat_frequency() -> ~8.328 THz
+- V_eff matches V_bare ≈ 51.43 eV
+- compute_total_domains() -> 2.53e14 domains
+- Gross power output -> 2911.40 W

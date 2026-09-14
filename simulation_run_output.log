@@ -1,0 +1,9 @@
+[context-4] V_bare = 51.4271 eV, V_eff = 51.43 eV
+[domain-1] verify_fatigue_life() => total strain amplitude = 0.00213772807904 (target ~0.002138)
+[domain-1] predicted life => Nf = 52400 cycles
+[domain-2] compute_beat_frequency() => 8.32806399587 THz (rad/s = 5.23267693361e+13)
+[domain-2] V_bare = 51.4271428571 eV
+[domain-2] U_eff = 350.0 eV, V_driven = -298.57 eV, V_eff = 51.43 eV
+[domain-3] compute_total_domains() => 2.53e+14 domains
+[domain-3] gross power output = 2911.4 W
+[verification] domain_1=PASS, domain_2=PASS, domain_3=PASS
