@@ -12,6 +12,41 @@ import numpy as np
 
 ObjectiveFn = Callable[[np.ndarray], np.ndarray]  # (n_pop, d) -> (n_pop, m)
 
+# First-principles mechanical limits for the active 20 mm core interface.
+D_CORE = 0.020
+A_CONTACT = np.pi * D_CORE**2 / 4.0
+F_MIN_LIMIT = 6283.19
+F_MAX_LIMIT = 78539.82
+
+# Reconciled thermomechanical design values.
+K_STACK_OPTIMIZED = 5.0e6
+DL_NET_TARGET = 20.1e-6
+EPSILON_P_CEILING = 0.0004805
+
+
+def apply_physical_constraints(force_array: np.ndarray | float) -> np.ndarray | float:
+    """Clip clamp force values to the vacuum-sealing/yield envelope."""
+    return np.clip(force_array, F_MIN_LIMIT, F_MAX_LIMIT)
+
+
+def compute_structural_penalty(force: np.ndarray | float, temperature: float = 350.0):
+    """Penalize Pd-Ir yield and minimum sealing-pressure violations."""
+    if temperature >= 350.0:
+        yield_strength_film = 250.0e6
+    else:
+        t_fraction = (temperature - 25.0) / 325.0
+        yield_strength_film = (350.0 - t_fraction * 100.0) * 1.0e6
+
+    contact_stress = np.asarray(force) / A_CONTACT
+    penalty = np.zeros_like(contact_stress, dtype=float)
+    stress_violation = np.maximum(contact_stress - yield_strength_film, 0.0)
+    pressure_violation = np.maximum(20.0e6 - contact_stress, 0.0)
+    penalty += 1e5 * (stress_violation / 1e6) ** 2
+    penalty += 1e5 * (pressure_violation / 1e6) ** 2
+    if np.ndim(force) == 0:
+        return float(penalty)
+    return penalty
+
 
 def reference_points(m: int, divisions: int) -> np.ndarray:
     """Das-Dennis simplex-lattice reference points for `m` objectives."""

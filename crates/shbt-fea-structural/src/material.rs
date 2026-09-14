@@ -9,6 +9,45 @@ pub const T_COLD: f64 = 25.0 + KELVIN_OFFSET;
 /// Upper end of the qualified operating band (350 °C).
 pub const T_HOT: f64 = 350.0 + KELVIN_OFFSET;
 
+/// Active core diameter [m].
+pub const D_CORE: f64 = 0.020;
+/// Active core contact area [m²].
+pub const A_CONTACT: f64 = std::f64::consts::PI * D_CORE * D_CORE / 4.0;
+/// Minimum clamp force for vacuum sealing [N].
+pub const F_MIN: f64 = 6283.19;
+/// Maximum clamp force before Pd-Ir film yield at 350 °C [N].
+pub const F_MAX: f64 = 78539.82;
+/// Optimized Inconel X-750 stack stiffness [N/m].
+pub const K_STACK: f64 = 5.0e6;
+/// Target net thermal mismatch deflection [m].
+pub const DL_NET: f64 = 20.1e-6;
+/// Plastic strain ceiling for the 44,820-cycle fatigue target.
+pub const PLASTIC_STRAIN_CEILING: f64 = 0.0004805;
+
+/// Structural result used by the thermomechanical integrity gate.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct FeaOutput {
+    /// Maximum displacement [m].
+    pub max_displacement: f64,
+    /// Peak von Mises stress [Pa].
+    pub peak_von_mises: f64,
+    /// Cyclic plastic strain amplitude.
+    pub cyclic_plastic_strain: f64,
+    /// Calculated cycles to failure.
+    pub calculated_cycles_to_failure: f64,
+}
+
+/// Validate the peak-temperature structural and fatigue limits.
+pub fn validate_structural_design(output: &FeaOutput) -> Result<bool, &'static str> {
+    if output.peak_von_mises > 250.0e6 {
+        return Err("Interface stress exceeds yield strength of active Pd-Ir film at 350C");
+    }
+    if output.cyclic_plastic_strain > PLASTIC_STRAIN_CEILING {
+        return Err("Low-cycle fatigue limit violated: expected lifespan below 44,820 cycles");
+    }
+    Ok(true)
+}
+
 /// Isotropic elastic constants at a fixed temperature.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Elastic {
@@ -139,5 +178,24 @@ mod tests {
         assert!((d_i - 16.832_687_381e-6).abs() < 1e-14, "{d_i}");
         assert!((d_a - 9.037_467_969e-6).abs() < 1e-14, "{d_a}");
         assert!(((d_i - d_a) - 7.795_219_413e-6).abs() < 1e-14);
+    }
+
+    #[test]
+    fn structural_design_rejects_yield_and_fatigue_violations() {
+        let valid = FeaOutput {
+            max_displacement: DL_NET,
+            peak_von_mises: 250.0e6,
+            cyclic_plastic_strain: PLASTIC_STRAIN_CEILING,
+            calculated_cycles_to_failure: 44_820.0,
+        };
+        assert_eq!(validate_structural_design(&valid), Ok(true));
+
+        let mut overstressed = valid;
+        overstressed.peak_von_mises = 250.0e6 + 1.0;
+        assert!(validate_structural_design(&overstressed).is_err());
+
+        let mut fatigued = valid;
+        fatigued.cyclic_plastic_strain = PLASTIC_STRAIN_CEILING + 1.0e-9;
+        assert!(validate_structural_design(&fatigued).is_err());
     }
 }

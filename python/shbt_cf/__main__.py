@@ -69,6 +69,12 @@ def main(argv: list[str] | None = None) -> int:
         power_net_mc,
         sweep,
     )
+    from shbt_cf.optimize import (
+        F_MAX_LIMIT,
+        F_MIN_LIMIT,
+        apply_physical_constraints,
+        compute_structural_penalty,
+    )
 
     if args.command == "mc":
         pdf = (power_net_mc((45.0, 13.25), [[6.25, -2.025], [-2.025, 0.81]], n=args.n)
@@ -84,26 +90,35 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "optimize":
         import numpy as np
 
-        def objectives(x):
+        def clamp_force(x):
             de, di, t = x[:, 0] * 1e-3, x[:, 1] * 1e-3, x[:, 2] * 1e-3
             h0 = 1.2 * t
             s = 0.5 * h0
             delta = de / di
             ln = np.log(delta)
             k1 = (((delta - 1) / delta) ** 2
-                  / (np.pi * ((delta + 1) / (delta - 1) - 2 / ln)))
-            x, h = s / t, h0 / t
-            force = (4 * 206e9 / (1 - 0.3**2) * t**4 / (k1 * de**2)
-                     * x * ((h - x) * (h - 0.5 * x) + 1))
+                / (np.pi * ((delta + 1) / (delta - 1) - 2 / ln)))
+            x_ratio, h_ratio = s / t, h0 / t
+            raw_force = (4 * 206e9 / (1 - 0.3**2) * t**4 / (k1 * de**2)
+                         * x_ratio * ((h_ratio - x_ratio)
+                                      * (h_ratio - 0.5 * x_ratio) + 1))
+            return raw_force, apply_physical_constraints(raw_force)
+
+        def objectives(x):
+            de, di, t = x[:, 0] * 1e-3, x[:, 1] * 1e-3, x[:, 2] * 1e-3
+            raw_force, force = clamp_force(x)
+            penalty = compute_structural_penalty(raw_force)
             mass = 7.85e3 * np.pi * (de**2 - di**2) / 4 * t
-            return np.c_[-force / 1e4, mass]
+            return np.c_[-force / 1e4 + penalty, mass]
 
         res = optimize(objectives, (np.array([20.0, 8.0, 0.5]),
                                     np.array([60.0, 30.0, 3.0])),
                        2, generations=args.generations)
         f = res.objectives[res.front]
+        _, force = clamp_force(res.population[res.front])
         print(f"first front: {len(f)} designs "
-              f"(F range {(-f[:, 0]).min():.3f}..{(-f[:, 0]).max():.3f} ×10⁴ N)")
+              f"(F range {force.min():.2f}..{force.max():.2f} N, "
+              f"bounds {F_MIN_LIMIT:.2f}..{F_MAX_LIMIT:.2f} N)")
     elif args.command == "hud":
         hud = hud_tick(
             TorqueWrench(18.0, 0.5),

@@ -23,6 +23,10 @@ pub mod stoney;
 
 pub use belleville::{DiscSpring, DiscStack, StackLayout};
 pub use disc_fe::ConicalDiscFe;
+pub use material::{
+    validate_structural_design, FeaOutput, A_CONTACT, DL_NET, D_CORE, F_MAX, F_MIN, K_STACK,
+    PLASTIC_STRAIN_CEILING,
+};
 pub use stoney::FilmOnSubstrate;
 
 use shbt_core_math::precision::PrecisionMode;

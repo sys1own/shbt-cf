@@ -63,7 +63,7 @@ def power_net_mc(mean: tuple[float, float], cov, n: int = 1_000_000, seed: int =
     return _pdf(np.asarray(samples), (lo95, hi95))
 
 
-def coffin_manson_mc(delta_eps_p=(0.0040, 0.0002), eps_f=(0.35, 0.02),
+def coffin_manson_mc(delta_eps_p=(0.0004805, 0.000024025), eps_f=(0.35, 0.02),
                      c=(0.58, 0.01), n: int = 1_000_000, seed: int = 7,
                      threads: int = 4) -> MonteCarloPdf:
     """Coffin-Manson cycle-life PDF (native engine)."""
