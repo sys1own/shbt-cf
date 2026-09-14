@@ -113,3 +113,23 @@ Build the native module once:
 maturin build -m crates/shbt-fabrication-hil/Cargo.toml --features python --release
 pip3 install --user --no-deps target/wheels/shbt_fabrication_hil-*.whl
 ```
+## Integration & build lockdown (Stage 6)
+
+- `tests/closure_audit.rs` (shbt-fabrication-hil) — physical closure audits vs
+  cf.pdf reference values:
+  - volume mapping: `A_foot·t_metal = V_metal = 2.875e-12 m³`,
+    `N_D·V_D = V_domains = 2.30e-8 m³`, ratio exactly 8000 (Eqs. 29/35/123);
+  - GUM calorimetry: Table XLVI `(c·u)²` terms, nominal Σ=19.370 W²
+    (u_RSS=4.4011 W) with the unassigned 13.0061 W² residual made explicit
+    (Eq. 287), two-term allocation u_c=4.40806 W ≤ 5.6881 W (Eq. 284), and the
+    literal four-input budget P=ṁ·c_p·ΔT+P_env propagated through the parallel
+    MC engine to u_c≈5.696 W < 5.70 W (Eq. 305);
+  - Coffin–Manson range convention (ε′f=0.18, c=−0.62): ceiling
+    Δεp=0.0001530105 at N_f=44 820, N_f(0.00098)=2242, N_f(0.000155)=43 896 —
+    the nominal 0.000155 ceiling provably misses the endurance target.
+- `tests/bitwise_regression.rs` — deterministic kernel digest (Xoshiro256**,
+  Yoshida-6 compensated integration, Q64.64 accumulation, χ²/power measurands,
+  frame layout) restricted to libm-free IEEE-754 ops; golden digest
+  `0x03de00d3acded967` checked on both ISAs.
+- CI: new `bitwise` matrix job on `ubuntu-24.04` (x86-64/AVX-512) and
+  `ubuntu-24.04-arm` (ARM64/NEON) asserting identical digests.
