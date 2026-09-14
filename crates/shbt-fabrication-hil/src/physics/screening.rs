@@ -31,7 +31,8 @@ impl ScreeningKernel {
         let epsilon_0 = Float::with_val(prec, 8.8541878128e-12);
         let charge = Float::with_val(prec, 1.602176634e-19);
         let ev_to_joule = charge.clone();
-        let density = Float::with_val(prec, &self.density_of_states_ef * &self.atomic_density) / &ev_to_joule;
+        let density =
+            Float::with_val(prec, &self.density_of_states_ef * &self.atomic_density) / &ev_to_joule;
         let lambda = (&epsilon_0 / (charge.clone() * charge.clone() * density)).sqrt();
         let pi = Float::with_val(prec, std::f64::consts::PI);
         let denominator = Float::with_val(prec, 4) * pi * epsilon_0 * lambda;
