@@ -68,8 +68,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-24.04, name: x86_64-avx512 }
-          - { os: ubuntu-24.04-arm, name: arm64-neon }
+          - { os: ubuntu-24.04, name: x86_64-avx512, cpu: x86-64-v3 }
+          - { os: ubuntu-24.04-arm, name: arm64-neon, cpu: neoverse-n1 }
+    env:
+      # Per-ISA target-cpu; the x86 value in the top-level env is meaningless
+      # on aarch64 and would disable NEON.
+      CARGO_BUILD_RUSTFLAGS: >-
+        -C target-cpu=${{ matrix.cpu }}
+        -C opt-level=3
+        -C llvm-args=-enable-no-nans-fp-math=false
+        -C llvm-args=-enable-no-signed-zeros-fp-math=false
     steps:
       - uses: actions/checkout@v4
       - name: GMP/MPFR build prerequisites for `rug`

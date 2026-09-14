@@ -89,9 +89,12 @@ def main(argv: list[str] | None = None) -> int:
             h0 = 1.2 * t
             s = 0.5 * h0
             delta = de / di
-            k1 = 6 / np.pi / np.log(delta) * ((delta - 1) / delta) ** 2
-            force = (206e9 * t**4 / ((1 - 0.3**2) * k1 * de**2) * s
-                     * ((h0 / t - s / t) * (h0 / t - 0.5 * s / t) + 1))
+            ln = np.log(delta)
+            k1 = (((delta - 1) / delta) ** 2
+                  / (np.pi * ((delta + 1) / (delta - 1) - 2 / ln)))
+            x, h = s / t, h0 / t
+            force = (4 * 206e9 / (1 - 0.3**2) * t**4 / (k1 * de**2)
+                     * x * ((h - x) * (h - 0.5 * x) + 1))
             mass = 7.85e3 * np.pi * (de**2 - di**2) / 4 * t
             return np.c_[-force / 1e4, mass]
 

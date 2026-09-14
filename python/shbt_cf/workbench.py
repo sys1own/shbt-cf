@@ -121,10 +121,13 @@ class BellevillePreload:
 
 
 def _disc_force_py(de, di, t, h0, s, e, nu):
+    """DIN 2092 ideal-disc axial force; mirrors `DiscSpring::force`."""
     delta = de / di
-    k1 = 6 / np.pi / np.log(delta) * ((delta - 1) / delta) ** 2
-    return e * t**4 / ((1 - nu**2) * k1 * de**2) * s * (
-        (h0 / t - s / t) * (h0 / t - s / (2 * t)) + 1)
+    ln = np.log(delta)
+    k1 = ((delta - 1) / delta) ** 2 / (np.pi * ((delta + 1) / (delta - 1) - 2 / ln))
+    scale = 4 * e / (1 - nu**2) * t**4 / (k1 * de**2)
+    x, h = s / t, h0 / t
+    return scale * x * ((h - x) * (h - 0.5 * x) + 1)
 
 
 @dataclass

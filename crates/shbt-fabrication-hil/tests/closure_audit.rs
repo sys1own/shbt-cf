@@ -107,7 +107,10 @@ fn two_term_allocation_within_limit() {
     assert!(approx(u2_spatial, 6.9310039824, 1e-9), "{u2_spatial}");
     let uc = (u2_spatial + 12.50).sqrt();
     assert!(approx(uc, 4.408060798, 2e-6), "{uc}");
-    assert!(uc <= 5.6881, "u_c = {uc} exceeds the 5.6881 W allocation bound");
+    assert!(
+        uc <= 5.6881,
+        "u_c = {uc} exceeds the 5.6881 W allocation bound"
+    );
 }
 
 #[test]
