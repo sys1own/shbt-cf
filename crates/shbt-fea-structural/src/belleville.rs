@@ -6,6 +6,25 @@
 
 use crate::material::{Elastic, LinearModulus};
 
+/// DIN 2092 axial force for one disc from SI geometry and material inputs.
+pub fn force_per_disc(
+    de: f64,
+    di: f64,
+    t: f64,
+    h0: f64,
+    deflection: f64,
+    youngs: f64,
+    poisson: f64,
+) -> f64 {
+    DiscSpring {
+        outer_diameter: de,
+        inner_diameter: di,
+        thickness: t,
+        cone_height: h0,
+    }
+    .force(deflection, Elastic { youngs, poisson })
+}
+
 /// Conical disc geometry per DIN 2093 (dimensions without contact flats).
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct DiscSpring {

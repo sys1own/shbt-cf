@@ -17,12 +17,12 @@ pub enum Channel {
 }
 
 /// Nominal sampling rates [Hz] for the specified instruments.
-pub const TYPE_N_RATE_HZ: f64 = 10_000.0;
+pub const TYPE_N_RATE_HZ: u64 = 10_000;
 /// FBG nominal rate [Hz].
-pub const FBG_RATE_HZ: f64 = 10_000.0;
+pub const FBG_RATE_HZ: u64 = 10_000;
 /// CCD frame rate [Hz] (rows/blocks streamed; one frame carries `VALUES`
 /// spectral bins).
-pub const CCD_RATE_HZ: f64 = 1_000.0;
+pub const CCD_RATE_HZ: u64 = 1_000;
 
 /// Scalar payload lanes in a [`Frame`].
 pub const FRAME_VALUES: usize = 5;

@@ -14,11 +14,11 @@ path = "src/lib.rs"
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-shbt-core-math = { workspace = true }
-shbt-dielectric-floquet = { workspace = true }
-shbt-rcwa-optics = { workspace = true }
-shbt-fea-structural = { workspace = true }
-shbt-metrology-gum = { workspace = true }
+shbt-core-math = { path = "../shbt-core-math" }
+shbt-fea-structural = { path = "../shbt-fea-structural" }
+shbt-metrology-gum = { path = "../shbt-metrology-gum" }
+shbt-rcwa-optics = { path = "../shbt-rcwa-optics" }
+shbt-dielectric-floquet = { path = "../shbt-dielectric-floquet" }
 libc = "0.2"
 tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros", "sync"] }
 pyo3 = { version = "0.25", optional = true, features = ["extension-module", "abi3-py310"] }

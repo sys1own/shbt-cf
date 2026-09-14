@@ -199,7 +199,7 @@ mod tests {
                 Frame::scalar(
                     Channel::ThermocoupleN,
                     i,
-                    (i as f64 * 1e9 / TYPE_N_RATE_HZ) as u64,
+                    (i as f64 * 1e9 / TYPE_N_RATE_HZ as f64) as u64,
                     623.15 + 0.001 * (i as f64 % 997.0),
                 )
             };
@@ -207,7 +207,7 @@ mod tests {
                 Frame::scalar(
                     Channel::FbgStrain,
                     i,
-                    (i as f64 * 1e9 / FBG_RATE_HZ) as u64,
+                    (i as f64 * 1e9 / FBG_RATE_HZ as f64) as u64,
                     4.0e-3,
                 )
             };

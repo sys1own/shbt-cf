@@ -13,8 +13,7 @@ use crate::telemetry::{Channel, Frame};
 use numpy::ndarray::ArrayView1;
 use numpy::{PyArray1, PyArray2, PyArrayMethods, PyReadonlyArray2};
 use pyo3::prelude::*;
-use shbt_fea_structural::belleville::DiscSpring;
-use shbt_fea_structural::material::Elastic;
+use shbt_fea_structural::belleville::force_per_disc;
 use shbt_metrology_gum::distributions::{Input, Marginal, Sampler};
 use shbt_metrology_gum::engine::{self, models};
 use shbt_rcwa_optics::material::beat_frequency;
@@ -147,57 +146,67 @@ fn beat_hz(lambda1_m: f64, lambda2_m: f64) -> f64 {
 
 /// DIN 2092 Belleville force (metres/pascals/newtons SI arguments).
 #[pyfunction]
-fn disc_force(de: f64, di: f64, t: f64, h0: f64, s: f64, e_pa: f64, nu: f64) -> f64 {
-    DiscSpring {
-        outer_diameter: de,
-        inner_diameter: di,
-        thickness: t,
-        cone_height: h0,
-    }
-    .force(
-        s,
-        Elastic {
-            youngs: e_pa,
-            poisson: nu,
-        },
-    )
+fn disc_force(
+    de: f64,
+    di: f64,
+    t: f64,
+    h0: f64,
+    deflection: f64,
+    e: f64,
+    nu: f64,
+) -> PyResult<f64> {
+    Ok(force_per_disc(de, di, t, h0, deflection, e, nu))
 }
 
 /// `χ² = rᵀ diag(σ⁻²) r`.
 #[pyfunction]
-fn chi2(residual: Vec<f64>, inv_var: Vec<f64>) -> f64 {
-    crate::rom::chi2(&residual, &inv_var)
+fn chi2(residuals: Vec<f64>, weights: Vec<f64>) -> PyResult<f64> {
+    if residuals.len() != weights.len() {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "residuals and weights must have the same length",
+        ));
+    }
+    Ok(crate::rom::chi2(&residuals, &weights))
 }
 
 /// GUM-S1 Monte Carlo on `P_net = x₀ − x₁` with a 2×2 covariance matrix.
 /// Returns `(mean, std_dev, lo95, hi95)`; `outputs` (all draws) when
 /// `return_samples` is true.
 #[pyfunction]
-#[pyo3(signature = (mean, covariance, n, seed=0x5eed, threads=4))]
+#[pyo3(signature = (mean, cov, n, seed=0x5eed, threads=4))]
 fn power_net_mc<'py>(
     py: Python<'py>,
-    mean: [f64; 2],
-    covariance: [[f64; 2]; 2],
+    mean: Vec<f64>,
+    cov: Vec<Vec<f64>>,
     n: usize,
     seed: u64,
     threads: usize,
-) -> (f64, f64, f64, f64, Bound<'py, PyArray1<f64>>) {
+) -> PyResult<(Vec<f64>, Vec<f64>, f64, f64, Vec<f64>)> {
+    if n == 0 {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "n must be greater than zero",
+        ));
+    }
+    if mean.len() != 2 || cov.len() != 2 || cov.iter().any(|row| row.len() != 2) {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "mean and cov must describe two correlated inputs",
+        ));
+    }
     let sampler = Sampler::new(&[Input::Correlated {
         names: vec!["p_teg".into(), "p_support".into()],
-        mean: mean.to_vec(),
-        covariance: covariance.iter().map(|r| r.to_vec()).collect(),
+        mean,
+        covariance: cov,
     }])
-    .expect("covariance");
+    .map_err(|error| pyo3::exceptions::PyValueError::new_err(format!("{error:?}")))?;
     let report =
         py.allow_threads(|| engine::propagate(&sampler, models::power_net, n, seed, threads));
-    let arr = PyArray1::from_vec(py, report.outputs);
-    (
-        report.mean,
-        report.std_dev,
+    Ok((
+        vec![report.mean],
+        vec![report.std_dev],
         report.coverage_95.0,
         report.coverage_95.1,
-        arr,
-    )
+        report.outputs,
+    ))
 }
 
 /// Coffin–Manson low-cycle-fatigue Monte Carlo on scalar normals

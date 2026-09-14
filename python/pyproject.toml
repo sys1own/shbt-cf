@@ -8,10 +8,12 @@ version = "0.1.0"
 description = "Python orchestration wrapper for the SHBT zero-drift precision simulator Rust workspace"
 requires-python = ">=3.12"
 license = { text = "MIT" }
-dependencies = []
+dependencies = ["cffi", "numpy", "scipy"]
 
 [project.scripts]
 shbt-cf = "shbt_cf.__main__:main"
 
 [tool.maturin]
 manifest-path = "../crates/shbt-fabrication-hil/Cargo.toml"
+python-packages = ["shbt_cf"]
+features = ["python"]
