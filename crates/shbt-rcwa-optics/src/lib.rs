@@ -1,10 +1,27 @@
 //! 2D/3D Rigorous Coupled-Wave Analysis with scattering-matrix (S-matrix)
-//! recursion for thick grating stacks (simulator_spec.pdf §3, §4).
+//! recursion for periodic sub-wavelength grating stacks
+//! (simulator_spec.pdf §3–§4; cf.pdf §"Pump Light Absorption" Option B).
 //!
-//! Depends exclusively on `shbt-core-math`. Eigenvalue formulation and the
-//! Redheffer star-product S-matrix composition are implemented in Stage 3.
+//! * [`grating`] — harmonic truncation, lamellar / crossed unit cells,
+//!   Li-factorised convolution matrices.
+//! * [`solver`] — eigenmodes, Redheffer star product, order efficiencies,
+//!   interface and internal field reconstruction.
+//! * [`option_b`] — reactor grating: Λ = 960.80 nm relief, dual-pump
+//!   785/802.5 nm, specular reflectivity and `|E/E₀|²` enhancement.
+//! * [`material`] — Table VIII optical constants.
+//!
+//! Depends exclusively on `shbt-core-math`.
 
 #![forbid(unsafe_code)]
+
+pub mod cmat;
+pub mod grating;
+pub mod material;
+pub mod option_b;
+pub mod solver;
+
+pub use grating::{Profile, Segment, Truncation};
+pub use solver::{EField, Excitation, Lattice, Layer, SMatrix, Scattering, Side, Stack};
 
 use shbt_core_math::fixed::Q64x64;
 
@@ -18,21 +35,20 @@ pub struct PhaseAccumulator {
 }
 
 impl PhaseAccumulator {
-    /// Creates an accumulator at zero phase.
+    /// Zeroed accumulator.
     pub const fn new() -> Self {
         Self {
             turns: Q64x64::ZERO,
         }
     }
 
-    /// Advances the phase by `delta_turns`, wrapping the integer turn count so
-    /// the accumulator never overflows.
+    /// Advances the phase by `delta_turns` modulo one turn.
     pub fn advance(&mut self, delta_turns: Q64x64) {
         let sum = self.turns.checked_add(delta_turns).unwrap_or(Q64x64::ZERO);
         self.turns = Q64x64::from_bits(sum.to_bits() & (u64::MAX as i128));
     }
 
-    /// Current phase in `[0, 1)` turns.
+    /// Accumulated phase in turns.
     pub fn turns(&self) -> Q64x64 {
         self.turns
     }
@@ -43,12 +59,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn wraps_to_unit_interval() {
-        let mut acc = PhaseAccumulator::new();
-        let step = Q64x64::from_f64(0.25).unwrap();
-        for _ in 0..5 {
-            acc.advance(step);
-        }
-        assert_eq!(acc.turns(), Q64x64::from_f64(0.25).unwrap());
+    fn phase_wraps_in_turns() {
+        let mut p = PhaseAccumulator::new();
+        p.advance(Q64x64::from_f64(0.75).unwrap());
+        p.advance(Q64x64::from_f64(0.5).unwrap());
+        assert_eq!(p.turns(), Q64x64::from_f64(0.25).unwrap());
     }
 }

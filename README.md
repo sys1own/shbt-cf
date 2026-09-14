@@ -61,3 +61,21 @@ MPFR mantissa width via `shbt_core_math::precision::PrecisionMode::arbitrary_for
 Verification gate (`cargo test -p shbt-core-math duffing`): a periodically forced double-well
 Duffing oscillator, integrated for `10^7` Yoshida-6 steps in extended phase space, keeps
 `|ΔH/H₀| < 10⁻¹²` (measured ≈ 6·10⁻¹⁴) while a 1-ulp shadow trajectory separates to O(1).
+## Domain solvers (Stage 3)
+
+| Crate | Contents |
+|---|---|
+| `shbt-dielectric-floquet` | `FloquetModel`/`Transition` inputs (bands, occupations, `M_{ℓ,G}^{ab}` as supplied data); assembles `Π_{GG'}^{mn}(q,ω)`, `ε = δ − v_G Π` over composite `(G,m)` indices; κ₁-checked inverse via faer; `converge_unit_cell` drives a refinement series to `‖ε⁻¹_{k+1} − ε⁻¹_k‖∞ < 10⁻¹⁴` |
+| `shbt-rcwa-optics` | Full-vector RCWA: Li-factorised convolution matrices (`⟦ε⟧`, `⟦1/ε⟧⁻¹` for lamellar and rectangular unit cells), eigenmodes of `Ω² = PQ` (cf.pdf Eq. 190 in the invariant-y TM limit), Redheffer star-product S-matrix recursion, per-order efficiencies, interface/internal field reconstruction. `option_b` models Λ = 960.80 nm, d = 42.50 nm, t_b = 7.50 nm, t_Ti = 10 nm at 65° silica internal incidence for both pumps |
+| `shbt-fea-structural` | DIN 2092 Almen–László disc springs (`force`, `stiffness`, DIN stresses, Group 3 contact flats, compound stacks with friction), geometrically non-linear axisymmetric conical-disc FE with `E(T)`/`α(T)` and Newton–Raphson force control, extended Stoney bilayer stress (`R_pre`/`R_post`, finite-thickness correction, `α(T)` mismatch) |
+
+Verification:
+- RCWA vs analytic Fresnel/Airy slab benchmarks < 0.1 % (`solver::tests`), energy conservation
+  on lossless gratings, planar four-layer `F_z` reproduces cf.pdf Table XXII (0.0999 at 65°,
+  0.094 at the 68.5° minimum).
+- `DIN_2093_GROUP2` gate: analytic `DiscSpring::force` vs tabulated DIN 2093 Group 2 forces at
+  `s = 0.75 h₀`, all 20 series A/B discs within ±0.5 %; the exact-rotation FE agrees with DIN to
+  ≲1.5 % on the same set.
+- Note: the nominal grating `F_z` targets (124.5/138.2) are *not* reproduced by the stated
+  Option B inputs (silica prism at 65°): the computed `F_z` is O(1) and the tooth-edge value
+  grows with truncation, consistent with the spec's own sharp-corner caveat.
