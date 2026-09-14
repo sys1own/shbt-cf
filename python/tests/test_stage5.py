@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
+import json
+import subprocess
+import sys
+import tempfile
 import unittest
+from pathlib import Path
 
 import numpy as np
 
@@ -42,6 +47,23 @@ class TestOptimize(unittest.TestCase):
         self.assertGreater(len(res.front), 10)
         self.assertLess(f1.min(), 0.3)
         self.assertGreater(f1.max(), 0.5)
+
+    def test_optimizer_export_cli_writes_benchmark_json(self):
+        repo_root = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out = Path(tmpdir) / "simulator_output.json"
+            subprocess.run(
+                [sys.executable, "-m", "shbt_cf.optimize", "--export-results", "--out", str(out)],
+                cwd=repo_root,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            self.assertTrue(out.exists())
+            payload = json.loads(out.read_text(encoding="utf-8"))
+            self.assertIn("table_I", payload)
+            self.assertIn("table_XXXVII", payload)
+            self.assertGreater(payload["table_XXXVII"]["tail_energy_ratio"], 0.0)
 
 
 class TestWorkbench(unittest.TestCase):

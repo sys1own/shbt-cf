@@ -5,7 +5,10 @@ polynomial mutation. Pure NumPy, deterministic given a seed.
 
 from __future__ import annotations
 
+import argparse
+import importlib.util
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable, Sequence
 
 import numpy as np
@@ -171,3 +174,43 @@ def nsga3(
     f = objective(pop)
     fronts = fast_non_dominated_sort(f)
     return Nsga3Result(population=pop, objectives=f, front=fronts[0])
+
+
+def _run_benchmark_export(path: str | Path) -> None:
+    """Validate the published benchmark tables and emit the simulator JSON artifact."""
+    script = Path(__file__).resolve().parents[2] / "tests" / "validate_benchmarks.py"
+    spec = importlib.util.spec_from_file_location("validate_benchmarks", script)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"unable to load benchmark validator from {script}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    out = Path(path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    module.main(str(out))
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Command-line interface for optimizer validation and artifact export."""
+    parser = argparse.ArgumentParser(description="SHBT optimization and benchmark export")
+    parser.add_argument(
+        "--export-results",
+        action="store_true",
+        help="validate the benchmark tables and write a simulator_output.json artifact",
+    )
+    parser.add_argument(
+        "--out",
+        default="simulator_output.json",
+        help="output path for the generated JSON artifact",
+    )
+    args = parser.parse_args(list(argv) if argv is not None else None)
+
+    if args.export_results:
+        _run_benchmark_export(args.out)
+        return 0
+
+    parser.print_help()
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
