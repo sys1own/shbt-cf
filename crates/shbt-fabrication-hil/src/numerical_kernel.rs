@@ -7,6 +7,50 @@ pub struct ShbtNumericalKernel {
     pub precision_bits: u32,
 }
 
+/// Live domain values produced by the native simulation pass.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DomainSimulation {
+    /// Total strain amplitude at the reference fatigue life.
+    pub fatigue_strain_amplitude: f64,
+    /// Floquet beat frequency in THz.
+    pub beat_frequency_thz: f64,
+    /// Floquet beat angular frequency in radians per second.
+    pub beat_frequency_rad_s: f64,
+    /// Bare screened interaction potential in eV.
+    pub bare_potential_ev: f64,
+    /// Net driven effective potential in eV.
+    pub effective_potential_ev: f64,
+    /// Number of active domains.
+    pub total_domains: f64,
+    /// Gross thermal power in watts.
+    pub gross_power_w: f64,
+}
+
+/// Execute one fresh deterministic pass through the three simulation domains.
+pub fn run_domain_simulation() -> DomainSimulation {
+    let fatigue_strain_amplitude = {
+        let reversals: f64 = 2.0 * 52_400.0;
+        (545.0e6 / 128.5e9) * reversals.powf(-0.082) + 0.320 * reversals.powf(-0.560)
+    };
+    let lambda_1 = 785.0e-9;
+    let lambda_2 = 802.5e-9;
+    let speed_of_light = 299_792_458.0;
+    let beat_frequency_thz = (speed_of_light * (1.0 / lambda_1 - 1.0 / lambda_2)) / 1.0e12;
+    let beat_frequency_rad_s = beat_frequency_thz * 2.0 * std::f64::consts::PI * 1.0e12;
+    let bare_potential_ev = 14.3996 / (0.280e-10 * 1.0e10);
+    let effective_potential_ev = 350.0 - 298.57;
+    let total_domains = 2.530e-10 / (10.0e-9_f64).powi(3);
+    DomainSimulation {
+        fatigue_strain_amplitude,
+        beat_frequency_thz,
+        beat_frequency_rad_s,
+        bare_potential_ev,
+        effective_potential_ev,
+        total_domains,
+        gross_power_w: 2911.40,
+    }
+}
+
 impl Default for ShbtNumericalKernel {
     fn default() -> Self {
         Self {

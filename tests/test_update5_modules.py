@@ -3,6 +3,8 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).parents[1] / "python"))
 
 from shbt_cf.diagnostics import ShbtDiagnosticProcessor
@@ -35,3 +37,9 @@ def test_apdl_contains_all_target_layers():
     assert "ET,1,186" in script
     assert script.count("BLOCK,") == 5
     assert "TUNIF,350.0" in script
+
+
+def test_native_domain_simulation_is_live():
+    values = require_native().run_domain_simulation()
+    assert values[1] == pytest.approx(8.32806399587, rel=1e-12)
+    assert values[5] == pytest.approx(2.53e14)

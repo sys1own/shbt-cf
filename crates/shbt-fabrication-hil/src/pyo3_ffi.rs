@@ -20,6 +20,20 @@ use shbt_metrology_gum::distributions::{Input, Marginal, Sampler};
 use shbt_metrology_gum::engine::{self, models};
 use shbt_rcwa_optics::material::beat_frequency;
 
+#[pyfunction]
+fn run_domain_simulation() -> (f64, f64, f64, f64, f64, f64, f64) {
+    let result = crate::numerical_kernel::run_domain_simulation();
+    (
+        result.fatigue_strain_amplitude,
+        result.beat_frequency_thz,
+        result.beat_frequency_rad_s,
+        result.bare_potential_ev,
+        result.effective_potential_ev,
+        result.total_domains,
+        result.gross_power_w,
+    )
+}
+
 #[pyclass(name = "ShbtNumericalKernel")]
 pub struct PyShbtNumericalKernel {
     inner: crate::numerical_kernel::ShbtNumericalKernel,
@@ -527,6 +541,7 @@ fn column_means(x: PyReadonlyArray2<f64>) -> Vec<f64> {
 #[pymodule]
 fn shbt_cf_native(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyShbtNumericalKernel>()?;
+    m.add_function(wrap_pyfunction!(run_domain_simulation, m)?)?;
     m.add_class::<PyRing>()?;
     m.add_class::<PyScreeningKernel>()?;
     m.add_class::<PyConformalKineticsSolver>()?;
