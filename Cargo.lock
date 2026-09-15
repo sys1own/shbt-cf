@@ -1298,6 +1298,7 @@ dependencies = [
  "ndarray-linalg",
  "num-complex",
  "openblas-src",
+ "pyo3",
  "rayon",
 ]
 

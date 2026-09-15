@@ -1,6 +1,12 @@
 //! Dense crossed-grating RCWA primitives.
 #![allow(missing_docs)]
 
+pub mod floquet_lu;
+
+#[cfg(feature = "pyo3")]
+pub use floquet_lu::FloquetRCWASolver;
+pub use floquet_lu::{lu_decompose, lu_invert, lu_solve, shbt_rcwa_solve_floquet, Complex};
+
 use ndarray::{Array2, Array3, Axis};
 use num_complex::Complex64;
 use rayon::prelude::*;
