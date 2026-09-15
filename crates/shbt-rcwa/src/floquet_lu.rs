@@ -431,6 +431,138 @@ mod tests {
         }
     }
 
+    /// 4x4 Hilbert matrix scaled by (1 + 0.5i): the inverse is the known
+    /// integer Hilbert inverse divided by the scalar.
+    fn hilbert4_complex() -> (Vec<Complex>, Vec<Complex>) {
+        let s = Complex::new(1.0, 0.5);
+        let h4 = [
+            1.0,
+            1.0 / 2.0,
+            1.0 / 3.0,
+            1.0 / 4.0,
+            1.0 / 2.0,
+            1.0 / 3.0,
+            1.0 / 4.0,
+            1.0 / 5.0,
+            1.0 / 3.0,
+            1.0 / 4.0,
+            1.0 / 5.0,
+            1.0 / 6.0,
+            1.0 / 4.0,
+            1.0 / 5.0,
+            1.0 / 6.0,
+            1.0 / 7.0,
+        ];
+        let h4_inv = [
+            16.0, -120.0, 240.0, -140.0, -120.0, 1200.0, -2700.0, 1680.0, 240.0, -2700.0, 6480.0,
+            -4200.0, -140.0, 1680.0, -4200.0, 2800.0,
+        ];
+        let a: Vec<Complex> = h4.iter().map(|&v| Complex::new(v, 0.0) * s).collect();
+        let inv: Vec<Complex> = h4_inv.iter().map(|&v| Complex::new(v, 0.0) / s).collect();
+        (a, inv)
+    }
+
+    #[test]
+    fn lu_invert_4x4_matches_hilbert_reference() {
+        let n = 4;
+        let (a, expected_inv) = hilbert4_complex();
+        let mut lu = a.clone();
+        let mut pivot = [0usize; 4];
+        lu_decompose(&mut lu, n, &mut pivot).unwrap();
+
+        let mut inv = [Complex::default(); 16];
+        let mut col = [Complex::default(); 4];
+        let mut work = [Complex::default(); 4];
+        lu_invert(&lu, &pivot, n, &mut inv, &mut col, &mut work).unwrap();
+
+        for i in 0..16 {
+            let err = (inv[i] - expected_inv[i]).norm_sq().sqrt();
+            assert!(
+                err <= 1e-10 * expected_inv[i].norm_sq().sqrt().max(1.0),
+                "index {i}: err {err}"
+            );
+        }
+        for i in 0..n {
+            for j in 0..n {
+                let entry = (0..n).fold(Complex::default(), |acc, k| {
+                    acc + a[i * n + k] * inv[k * n + j]
+                });
+                let expected = if i == j {
+                    Complex::new(1.0, 0.0)
+                } else {
+                    Complex::default()
+                };
+                assert!((entry - expected).norm_sq().sqrt() < 1e-7);
+            }
+        }
+    }
+
+    #[test]
+    fn lu_solve_3x3_and_4x4_residuals_are_machine_precision() {
+        // 3x3 residual already covered; here an ill-conditioned 4x4 (Hilbert)
+        // through the full decompose -> solve chain.
+        let n = 4;
+        let (a, _) = hilbert4_complex();
+        let b = vec![
+            Complex::new(1.0, -0.5),
+            Complex::new(0.25, 0.75),
+            Complex::new(-2.0, 0.0),
+            Complex::new(0.5, 0.5),
+        ];
+        let mut lu = a.clone();
+        let mut pivot = [0usize; 4];
+        lu_decompose(&mut lu, n, &mut pivot).unwrap();
+        let mut x = [Complex::default(); 4];
+        lu_solve(&lu, &pivot, &b, n, &mut x).unwrap();
+        let ax = matmul(&a, &x, n);
+        for i in 0..n {
+            assert!((ax[i] - b[i]).norm_sq().sqrt() < 1e-9);
+        }
+    }
+
+    #[test]
+    fn c_abi_solve_is_stable_across_repeated_calls() {
+        // Repeated solves of the same ill-conditioned system must return
+        // identical results to machine precision (deterministic pivoting).
+        let n = 4;
+        let (a, _) = hilbert4_complex();
+        let a_re: Vec<f64> = a.iter().map(|z| z.re).collect();
+        let a_im: Vec<f64> = a.iter().map(|z| z.im).collect();
+        let b_re = [1.0, -0.5, 0.25, 2.0];
+        let b_im = [0.5, 1.0, -0.25, -1.0];
+
+        let mut first = vec![Complex::default(); n];
+        for call in 0..1000 {
+            let mut x_re = [0.0; 4];
+            let mut x_im = [0.0; 4];
+            let status = unsafe {
+                shbt_rcwa_solve_floquet(
+                    a_re.as_ptr(),
+                    a_im.as_ptr(),
+                    b_re.as_ptr(),
+                    b_im.as_ptr(),
+                    n,
+                    x_re.as_mut_ptr(),
+                    x_im.as_mut_ptr(),
+                )
+            };
+            assert_eq!(status, 0);
+            let x: Vec<Complex> = (0..n).map(|i| Complex::new(x_re[i], x_im[i])).collect();
+            if call == 0 {
+                first = x;
+            } else {
+                for i in 0..n {
+                    assert!(close(x[i], first[i]), "call {call} diverged at {i}");
+                }
+            }
+        }
+
+        let ax = matmul(&a, &first, n);
+        for i in 0..n {
+            assert!((ax[i] - Complex::new(b_re[i], b_im[i])).norm_sq().sqrt() < 1e-9);
+        }
+    }
+
     #[test]
     fn singular_matrix_is_rejected() {
         let mut a = vec![Complex::new(1.0, 0.0); 4];

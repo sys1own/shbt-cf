@@ -401,6 +401,18 @@ mod tests {
     }
 
     #[test]
+    fn trace_is_preserved_over_1000_rk4_steps() {
+        let p = params();
+        let mut rho = ground_state();
+        let dt = 1e-3;
+        for step in 0..1000 {
+            rho = rk4_step(&rho, step as f64 * dt, dt, &p);
+        }
+        let tr = trace(&rho);
+        assert!((tr.re - 1.0).abs() < 1e-9 && tr.im.abs() < 1e-12);
+    }
+
+    #[test]
     fn rk4_preserves_trace_and_populates_excited_states() {
         let p = params();
         let mut rho = ground_state();
