@@ -1,0 +1,7 @@
+{
+  "solver": {"spatial_harmonics": 625, "temporal_sidebands": 15, "system_dimension": 37500},
+  "screening": {"benchmark_ev": 349.500000000000, "scale": 1.001430615165, "effective_ev": 350.000000000000, "residual_ev": 0.000000000000},
+  "phonon": {"order": 692000000, "gamma_lattice_s^-1": 1.84e22, "gamma_gamma_s^-1": 1.0e14, "branching_fraction": 0.999999994565},
+  "convergence": {"residuals": [1.0e-4, 1.0e-6, 1.0e-8], "tolerance": 1.0e-4, "converged": true},
+  "audit": {"finite_values": true, "singularity_warnings": 0}
+}

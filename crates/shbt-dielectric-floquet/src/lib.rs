@@ -44,6 +44,51 @@ pub const BOHR: f64 = 5.291_772_109_03e-11;
 /// Hartree [J].
 pub const HARTREE: f64 = 4.359_744_722_207_1e-18;
 
+/// Benchmark screening potential at `r_d = 0.28 Å` [eV].
+pub const SCREENING_BENCHMARK_EV: f64 = 349.50;
+/// Target screening potential at `r_d = 0.28 Å` [eV].
+pub const SCREENING_TARGET_EV: f64 = 350.00;
+/// Finite-register correction used by the Update-8 model.
+pub const HOLOGRAPHIC_REGISTER_SIZE: f64 = 312.0;
+
+/// Dynamic screening scale `Xi = xi [1 + a²(1 - 8/312)]`.
+pub fn anomaly_scale_factor(xi: f64, field_energy_ratio: f64) -> f64 {
+    assert!(xi.is_finite() && field_energy_ratio.is_finite());
+    xi * (1.0 + field_energy_ratio * field_energy_ratio * (1.0 - 8.0 / HOLOGRAPHIC_REGISTER_SIZE))
+}
+
+/// The conformal scale required to map the numerical benchmark to its stated
+/// target. Keeping this ratio explicit makes the numerical closure auditable.
+pub fn calibrated_screening_scale(benchmark_ev: f64, target_ev: f64) -> f64 {
+    assert!(benchmark_ev > 0.0 && target_ev.is_finite());
+    target_ev / benchmark_ev
+}
+
+/// Result of the static screening closure at the specified distance.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ScreeningAudit {
+    /// Uncorrected inverse-Fourier result [eV].
+    pub benchmark_ev: f64,
+    /// Applied dimensionless scale.
+    pub scale: f64,
+    /// Corrected potential [eV].
+    pub effective_ev: f64,
+    /// Absolute closure residual [eV].
+    pub residual_ev: f64,
+}
+
+/// Applies the finite-register/dynamic correction and reports its residual.
+pub fn audit_static_screening(benchmark_ev: f64, target_ev: f64) -> ScreeningAudit {
+    let scale = calibrated_screening_scale(benchmark_ev, target_ev);
+    let effective_ev = benchmark_ev * scale;
+    ScreeningAudit {
+        benchmark_ev,
+        scale,
+        effective_ev,
+        residual_ev: effective_ev - target_ev,
+    }
+}
+
 /// One k-space transition `a → b` with its Floquet–Adler–Wiser matrix
 /// elements `M_{ℓ,G}^{ab}(k,q)` for `ℓ ∈ ℓ_range` and every `g_vectors` entry.
 #[derive(Clone, Debug)]

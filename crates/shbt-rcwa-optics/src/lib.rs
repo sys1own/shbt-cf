@@ -19,6 +19,7 @@ pub mod grating;
 pub mod material;
 pub mod option_b;
 pub mod solver;
+pub mod spacetime;
 
 pub use grating::{Profile, Segment, Truncation};
 pub use solver::{EField, Excitation, Lattice, Layer, SMatrix, Scattering, Side, Stack};

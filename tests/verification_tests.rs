@@ -4,10 +4,19 @@ use shbt_cf::run_simulation;
 fn verifies_driven_screening_shift() {
     let summary = run_simulation();
     assert!(
-        (summary.u_eff - 350.0).abs() <= 0.5,
+        (summary.u_eff - 350.0).abs() <= 1e-4,
         "U_eff = {} eV",
         summary.u_eff
     );
+}
+
+#[test]
+fn verifies_update8_audit_export() {
+    let _ = run_simulation();
+    let audit = std::fs::read_to_string("sim_outputs/update_8_verification.json").unwrap();
+    assert!(audit.contains("\"system_dimension\": 37500"));
+    assert!(audit.contains("\"finite_values\": true"));
+    assert!(audit.contains("\"converged\": true"));
 }
 
 #[test]

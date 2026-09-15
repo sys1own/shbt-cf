@@ -22,6 +22,7 @@ pub mod material;
 pub mod quadrature;
 pub mod stoney;
 pub mod variational;
+pub mod viscoplastic;
 
 pub use belleville::{DiscSpring, DiscStack, StackLayout};
 pub use disc_fe::ConicalDiscFe;
