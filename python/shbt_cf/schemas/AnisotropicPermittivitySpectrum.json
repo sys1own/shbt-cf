@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AnisotropicPermittivitySpectrum",
+  "type": "object",
+  "required": ["material_identifier", "spectral_points"],
+  "properties": {
+    "material_identifier": {"type": "string"},
+    "spectral_points": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["wavelength_nm", "epsilon_xx", "epsilon_yy", "epsilon_zz"],
+        "properties": {
+          "wavelength_nm": {"type": "number", "minimum": 100.0},
+          "epsilon_xx": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number"}},
+          "epsilon_yy": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number"}},
+          "epsilon_zz": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number"}}
+        }
+      }
+    }
+  }
+}

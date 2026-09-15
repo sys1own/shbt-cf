@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Pt100CalibrationCurve",
+  "type": "object",
+  "required": ["calibration_id", "coefficients", "uncertainty_rto"],
+  "properties": {
+    "calibration_id": {"type": "string"},
+    "coefficients": {
+      "type": "object",
+      "required": ["A", "B", "C"],
+      "properties": {"A": {"type": "number"}, "B": {"type": "number"}, "C": {"type": "number"}}
+    },
+    "uncertainty_rto": {"type": "number", "minimum": 0.0}
+  }
+}

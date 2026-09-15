@@ -41,8 +41,15 @@ class TestOptimize(unittest.TestCase):
             g = 1 + 9 * x[:, 1:].mean(1)
             return np.c_[f1, g * (1 - np.sqrt(f1 / g))]
 
-        res = nsga3(zdt1, (np.zeros(4), np.ones(4)), 2, n_pop=60,
-                    generations=25, divisions=8, seed=1)
+        res = nsga3(
+            zdt1,
+            (np.zeros(4), np.ones(4)),
+            2,
+            n_pop=60,
+            generations=25,
+            divisions=8,
+            seed=1,
+        )
         f1 = res.objectives[res.front, 0]
         self.assertGreater(len(res.front), 10)
         self.assertLess(f1.min(), 0.3)
@@ -53,7 +60,14 @@ class TestOptimize(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             out = Path(tmpdir) / "simulator_output.json"
             subprocess.run(
-                [sys.executable, "-m", "shbt_cf.optimize", "--export-results", "--out", str(out)],
+                [
+                    sys.executable,
+                    "-m",
+                    "shbt_cf.optimize",
+                    "--export-results",
+                    "--out",
+                    str(out),
+                ],
                 cwd=repo_root,
                 check=True,
                 capture_output=True,
@@ -84,7 +98,10 @@ class TestWorkbench(unittest.TestCase):
             BellevillePreload(0.03175, 0.01626, 0.00150, 0.00178, 206e9, 0.30),
             HipimsStress(2.0),
             GratingAlignment(0.4, -0.3, 0.1),
-            18.2, 800e-6, -1.4)
+            18.2,
+            800e-6,
+            -1.4,
+        )
         self.assertEqual(hud.torque_status, "ok")
         self.assertEqual(hud.hipims_status, "ok")
         self.assertEqual(hud.alignment_status, "ok")

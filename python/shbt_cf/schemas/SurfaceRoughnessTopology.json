@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SurfaceRoughnessTopology",
+  "type": "object",
+  "required": ["surface_id", "rq_nm", "autocorrelation_length_nm", "profile_matrix"],
+  "properties": {
+    "surface_id": {"type": "string"},
+    "rq_nm": {"type": "number", "minimum": 0.0},
+    "autocorrelation_length_nm": {"type": "number", "minimum": 0.0},
+    "profile_matrix": {"type": "array", "items": {"type": "array", "items": {"type": "number"}}}
+  }
+}

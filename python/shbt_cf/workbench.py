@@ -42,7 +42,8 @@ def compute_fatigue_lifetime_mc(
     alpha = (min_strain - mean_strain) / std_dev_strain
     beta = (max_strain - mean_strain) / std_dev_strain
     strain = truncnorm(alpha, beta, loc=mean_strain, scale=std_dev_strain).rvs(
-        size=iterations, random_state=seed)
+        size=iterations, random_state=seed
+    )
     return 0.5 * (epsilon_f_prime / strain) ** (1.0 / c)
 
 
@@ -78,30 +79,42 @@ class MonteCarloPdf:
     coverage_95: tuple[float, float]
 
 
-def power_net_mc(mean: tuple[float, float], cov, n: int = 1_000_000, seed: int = 7,
-                 threads: int = 4) -> MonteCarloPdf:
+def power_net_mc(
+    mean: tuple[float, float], cov, n: int = 1_000_000, seed: int = 7, threads: int = 4
+) -> MonteCarloPdf:
     """P_net = P_teg - P_support Monte-Carlo PDF (native engine)."""
     ext = require_native()
     mean_out, std, lo95, hi95, samples = ext.power_net_mc(
-        list(mean), [list(r) for r in cov], n, seed, threads)
+        list(mean), [list(r) for r in cov], n, seed, threads
+    )
     return _pdf(np.asarray(samples), (lo95, hi95))
 
 
-def coffin_manson_mc(delta_eps_p=(0.0004805, 0.000024025), eps_f=(0.35, 0.02),
-                     c=(0.58, 0.01), n: int = 1_000_000, seed: int = 7,
-                     threads: int = 4) -> MonteCarloPdf:
+def coffin_manson_mc(
+    delta_eps_p=(0.0004805, 0.000024025),
+    eps_f=(0.35, 0.02),
+    c=(0.58, 0.01),
+    n: int = 1_000_000,
+    seed: int = 7,
+    threads: int = 4,
+) -> MonteCarloPdf:
     """Coffin-Manson cycle-life PDF (native engine)."""
     ext = require_native()
-    _median, lo95, hi95, samples = ext.coffin_manson_mc(eps_f, c, delta_eps_p, n, seed, threads)
+    _median, lo95, hi95, samples = ext.coffin_manson_mc(
+        eps_f, c, delta_eps_p, n, seed, threads
+    )
     return _pdf(np.asarray(samples), (lo95, hi95))
 
 
-def _pdf(samples: np.ndarray, coverage_95: tuple[float, float], bins: int = 120) -> MonteCarloPdf:
+def _pdf(
+    samples: np.ndarray, coverage_95: tuple[float, float], bins: int = 120
+) -> MonteCarloPdf:
     samples = samples[np.isfinite(samples)]
     hist, edges = np.histogram(samples, bins=bins, density=True)
     centers = 0.5 * (edges[1:] + edges[:-1])
-    return MonteCarloPdf(samples, centers, hist, float(samples.mean()),
-                         float(samples.std()), coverage_95)
+    return MonteCarloPdf(
+        samples, centers, hist, float(samples.mean()), float(samples.std()), coverage_95
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -135,10 +148,20 @@ class BellevillePreload:
 
     def force_per_disc_n(self, deflection_m: float) -> float:
         if native is not None:
-            return float(native.disc_force(self.de_m, self.di_m, self.t_m,
-                                           self.h0_m, deflection_m, self.e_pa, self.nu))
-        return _disc_force_py(self.de_m, self.di_m, self.t_m, self.h0_m,
-                              deflection_m, self.e_pa, self.nu)
+            return float(
+                native.disc_force(
+                    self.de_m,
+                    self.di_m,
+                    self.t_m,
+                    self.h0_m,
+                    deflection_m,
+                    self.e_pa,
+                    self.nu,
+                )
+            )
+        return _disc_force_py(
+            self.de_m, self.di_m, self.t_m, self.h0_m, deflection_m, self.e_pa, self.nu
+        )
 
     def stack_force_n(self, deflection_m: float, n_parallel: int = 1) -> float:
         return n_parallel * self.force_per_disc_n(deflection_m)
@@ -201,10 +224,16 @@ class HudState:
     residuals: dict[str, float] = field(default_factory=dict)
 
 
-def hud_tick(torque: TorqueWrench, preload: BellevillePreload,
-             stress: HipimsStress, alignment: GratingAlignment,
-             torque_nm: float, deflection_m: float, stress_gpa: float,
-             residuals: dict[str, float] | None = None) -> HudState:
+def hud_tick(
+    torque: TorqueWrench,
+    preload: BellevillePreload,
+    stress: HipimsStress,
+    alignment: GratingAlignment,
+    torque_nm: float,
+    deflection_m: float,
+    stress_gpa: float,
+    residuals: dict[str, float] | None = None,
+) -> HudState:
     """Assemble one HUD tick from live sensor readings."""
     return HudState(
         torque_nm=torque_nm,
@@ -222,8 +251,9 @@ def hud_tick(torque: TorqueWrench, preload: BellevillePreload,
 CHANNEL_IDS = {"thermocouple_n": 1, "fbg_strain": 2, "ccd": 3}
 
 
-def ring_residual_sample(capacity: int = 4096, frames: int = 2000,
-                         dt_ns: int = 100_000) -> dict[str, float]:
+def ring_residual_sample(
+    capacity: int = 4096, frames: int = 2000, dt_ns: int = 100_000
+) -> dict[str, float]:
     """Push synthetic 10 kHz telemetry through the native SPSC ring and score
     each channel's chi-squared residual against a zero-offset surrogate."""
     ext = require_native()
@@ -236,5 +266,5 @@ def ring_residual_sample(capacity: int = 4096, frames: int = 2000,
         for name, mu in truth.items():
             meas = mu + sigma[name] * rng.standard_normal()
             ring.push_wave(CHANNEL_IDS[name], i, 1, meas, dt_ns)
-            chi2[name].append(float(ext.chi2([meas - mu], [1.0 / sigma[name]**2])))
+            chi2[name].append(float(ext.chi2([meas - mu], [1.0 / sigma[name] ** 2])))
     return {k: float(np.mean(v)) for k, v in chi2.items()}

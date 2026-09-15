@@ -23,6 +23,9 @@ members = [
     "crates/shbt-fea-structural",
     "crates/shbt-metrology-gum",
     "crates/shbt-fabrication-hil",
+    "crates/shbt-rcwa",
+    "crates/shbt-contact",
+    "crates/shbt-py-bindings",
 ]
 
 [workspace.package]
@@ -39,6 +42,14 @@ shbt-dielectric-floquet = { path = "crates/shbt-dielectric-floquet", version = "
 shbt-rcwa-optics = { path = "crates/shbt-rcwa-optics", version = "0.1.0" }
 shbt-fea-structural = { path = "crates/shbt-fea-structural", version = "0.1.0" }
 shbt-metrology-gum = { path = "crates/shbt-metrology-gum", version = "0.1.0" }
+shbt-rcwa = { path = "crates/shbt-rcwa", version = "0.1.0" }
+shbt-contact = { path = "crates/shbt-contact", version = "0.1.0" }
+ndarray = "0.16"
+ndarray-linalg = { version = "0.17", default-features = false, features = ["openblas-static"] }
+num-complex = "0.4"
+openblas-src = { version = "0.10", default-features = false, features = ["cblas", "rustls", "static"] }
+rayon = "1.10"
+pyo3 = { version = "0.25", features = ["extension-module", "abi3-py310"] }
 rug = { version = "1.27", default-features = false, features = ["float"] }
 
 [workspace.lints.rust]

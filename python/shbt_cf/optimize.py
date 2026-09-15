@@ -98,16 +98,21 @@ class Nsga3Result:
     front: np.ndarray  # indices of first-front members
 
 
-def _niching(front_len: int, f_norm: np.ndarray, refs: np.ndarray, need: int) -> list[int]:
+def _niching(
+    front_len: int, f_norm: np.ndarray, refs: np.ndarray, need: int
+) -> list[int]:
     """NSGA-III niching over the last front: returns positions into it."""
     chosen: list[int] = []
+
     # perpendicular distance to each reference line
     def assoc(idx: int) -> tuple[int, float]:
         f = f_norm[idx]
         # distance to line through ref direction
         with np.errstate(divide="ignore", invalid="ignore"):
             proj = (f @ refs.T) / np.maximum((refs * refs).sum(axis=1), 1e-14)
-            d = np.linalg.norm(f - np.outer(proj, np.ones(refs.shape[1])) * refs, axis=1)
+            d = np.linalg.norm(
+                f - np.outer(proj, np.ones(refs.shape[1])) * refs, axis=1
+            )
         r = int(np.argmin(d))
         return r, float(d[r])
 
@@ -145,16 +150,26 @@ def nsga3(
 
     def mate(a: np.ndarray, b: np.ndarray) -> np.ndarray:
         u = rng.random(a.shape)
-        beta = np.where(u <= 0.5, (2 * u) ** (1 / (eta_c + 1)), (1 / (2 * (1 - u))) ** (1 / (eta_c + 1)))
+        beta = np.where(
+            u <= 0.5,
+            (2 * u) ** (1 / (eta_c + 1)),
+            (1 / (2 * (1 - u))) ** (1 / (eta_c + 1)),
+        )
         child = 0.5 * ((1 + beta) * a + (1 - beta) * b)
         mut = rng.random(a.shape) < p_mut
-        delta = np.where(rng.random(a.shape) < 0.5, (2 * rng.random(a.shape)) ** (1 / (eta_m + 1)) - 1, 1 - (2 * (1 - rng.random(a.shape))) ** (1 / (eta_m + 1)))
+        delta = np.where(
+            rng.random(a.shape) < 0.5,
+            (2 * rng.random(a.shape)) ** (1 / (eta_m + 1)) - 1,
+            1 - (2 * (1 - rng.random(a.shape))) ** (1 / (eta_m + 1)),
+        )
         child = np.where(mut, child + delta * (hi - lo), child)
         return np.clip(child, lo, hi)
 
     for _ in range(generations):
         i = rng.permutation(n_pop)
-        kids = np.array([mate(pop[i[k]], pop[i[k + 1]]) for k in range(0, n_pop - n_pop % 2, 2)])
+        kids = np.array(
+            [mate(pop[i[k]], pop[i[k + 1]]) for k in range(0, n_pop - n_pop % 2, 2)]
+        )
         comb = np.vstack([pop, kids])
         f = objective(comb)
         fronts = fast_non_dominated_sort(f)
@@ -191,7 +206,9 @@ def _run_benchmark_export(path: str | Path) -> None:
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Command-line interface for optimizer validation and artifact export."""
-    parser = argparse.ArgumentParser(description="SHBT optimization and benchmark export")
+    parser = argparse.ArgumentParser(
+        description="SHBT optimization and benchmark export"
+    )
     parser.add_argument(
         "--export-results",
         action="store_true",

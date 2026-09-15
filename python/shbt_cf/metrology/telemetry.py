@@ -15,20 +15,32 @@ class ThermalMetrologyBudget:
 
     TARGET_FULL_BUDGET_W = 5.69
 
-    def __init__(self, cp: float = 4184.0, u_mass_flow: float = 1.2e-4, u_temp: float = 0.04, coverage_factor: float = 2.0):
+    def __init__(
+        self,
+        cp: float = 4184.0,
+        u_mass_flow: float = 1.2e-4,
+        u_temp: float = 0.04,
+        coverage_factor: float = 2.0,
+    ):
         self.cp = float(cp)
         self.u_mass_flow = float(u_mass_flow)
         self.u_temp = float(u_temp)
         self.coverage_factor = float(coverage_factor)
 
-    def compute_standard_uncertainty(self, mass_flow: float, delta_temp: float) -> float:
+    def compute_standard_uncertainty(
+        self, mass_flow: float, delta_temp: float
+    ) -> float:
         """Combine independent flow, inlet-temperature, and outlet-temperature terms."""
         variance = (self.cp * delta_temp * self.u_mass_flow) ** 2
         variance += 2.0 * (self.cp * mass_flow * self.u_temp) ** 2
         return float(np.sqrt(variance))
 
-    def compute_expanded_uncertainty(self, mass_flow: float, delta_temp: float) -> float:
-        return self.coverage_factor * self.compute_standard_uncertainty(mass_flow, delta_temp)
+    def compute_expanded_uncertainty(
+        self, mass_flow: float, delta_temp: float
+    ) -> float:
+        return self.coverage_factor * self.compute_standard_uncertainty(
+            mass_flow, delta_temp
+        )
 
     def compute_full_budget_uncertainty(
         self,
@@ -42,15 +54,23 @@ class ThermalMetrologyBudget:
         cp: float = 4182.0,
     ) -> float:
         """Return the audited four-input standard uncertainty in watts."""
-        sensitivities = np.array([
-            cp * delta_temp,
-            mass_flow * delta_temp,
-            mass_flow * cp,
-            1.0,
-        ])
+        sensitivities = np.array(
+            [
+                cp * delta_temp,
+                mass_flow * delta_temp,
+                mass_flow * cp,
+                1.0,
+            ]
+        )
         uncertainties = np.array([u_mass_flow, u_cp, u_delta_temp, u_environment])
         return float(np.linalg.norm(sensitivities * uncertainties))
 
-    def generate_perturbed_telemetry(self, true_power: float, mass_flow: float, delta_temp: float, *, rng=None) -> float:
+    def generate_perturbed_telemetry(
+        self, true_power: float, mass_flow: float, delta_temp: float, *, rng=None
+    ) -> float:
         rng = np.random.default_rng() if rng is None else rng
-        return float(rng.normal(true_power, self.compute_standard_uncertainty(mass_flow, delta_temp)))
+        return float(
+            rng.normal(
+                true_power, self.compute_standard_uncertainty(mass_flow, delta_temp)
+            )
+        )

@@ -24,7 +24,9 @@ def balance_truncate(A, B, C, D, target_dim: int = 4):
     ec, Lc = la.eigh(Wc)
     eo, Lo = la.eigh(Wo)
     if ec.min() <= 0 or eo.min() <= 0:
-        raise ValueError("controllability and observability Gramians must be positive definite")
+        raise ValueError(
+            "controllability and observability Gramians must be positive definite"
+        )
     Lc = Lc @ np.diag(np.sqrt(ec))
     Lo = Lo @ np.diag(np.sqrt(eo))
     U, singular_values, Vh = la.svd(Lo.T @ Lc, full_matrices=False)
@@ -56,7 +58,9 @@ def verify_lure_stability(Ar, Br, Cr, gamma, *, solver: str = "SCS") -> bool:
     bottom = -2.0 * Lambda @ np.diag(1.0 / gamma)
     lmi = cp.bmat([[top, off], [off.T, bottom]])
     eps = 1e-7
-    problem = cp.Problem(cp.Minimize(0), [P >> eps * np.eye(n), lam >= eps, lmi << -eps * np.eye(n + q)])
+    problem = cp.Problem(
+        cp.Minimize(0), [P >> eps * np.eye(n), lam >= eps, lmi << -eps * np.eye(n + q)]
+    )
     try:
         problem.solve(solver=solver, verbose=False)
     except cp.error.SolverError:

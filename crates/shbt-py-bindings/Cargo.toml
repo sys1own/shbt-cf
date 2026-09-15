@@ -1,0 +1,21 @@
+[package]
+name = "shbt-py-bindings"
+description = "PyO3 bindings for SHBT transport and quantum coherence solvers"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+name = "shbt_cf_bindings"
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { workspace = true }
+shbt-rcwa = { workspace = true }
+
+[lints]
+workspace = true

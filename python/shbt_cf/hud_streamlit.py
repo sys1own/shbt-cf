@@ -34,8 +34,9 @@ def fabrication_page() -> None:
     col1, col2, col3 = st.columns(3)
 
     torque = TorqueWrench(setpoint_nm=18.0, tolerance_nm=0.5)
-    preload = BellevillePreload(de_m=0.03175, di_m=0.01626, t_m=0.00150,
-                                h0_m=0.00178, e_pa=206e9, nu=0.30)
+    preload = BellevillePreload(
+        de_m=0.03175, di_m=0.01626, t_m=0.00150, h0_m=0.00178, e_pa=206e9, nu=0.30
+    )
     hipims = HipimsStress(limit_gpa=2.0)
 
     with st.sidebar:
@@ -51,14 +52,19 @@ def fabrication_page() -> None:
     if HAVE_NATIVE:
         residuals = ring_residual_sample(frames=200)
 
-    hud = hud_tick(torque, preload, hipims, align, torque_nm,
-                   defl_um * 1e-6, stress_gpa, residuals)
+    hud = hud_tick(
+        torque, preload, hipims, align, torque_nm, defl_um * 1e-6, stress_gpa, residuals
+    )
 
     col1.metric("Torque", f"{hud.torque_nm:.2f} N·m", _status_badge(hud.torque_status))
-    col2.metric("Stack preload", f"{hud.stack_force_n:,.0f} N",
-                f"deflection {defl_um:.0f} µm")
-    col3.metric("HiPIMS stress", f"{hud.hipims_stress_gpa:+.2f} GPa",
-                _status_badge(hud.hipims_status))
+    col2.metric(
+        "Stack preload", f"{hud.stack_force_n:,.0f} N", f"deflection {defl_um:.0f} µm"
+    )
+    col3.metric(
+        "HiPIMS stress",
+        f"{hud.hipims_stress_gpa:+.2f} GPa",
+        _status_badge(hud.hipims_status),
+    )
 
     st.subheader("RCWA grating alignment")
     a1, a2, a3, a4 = st.columns(4)
@@ -89,15 +95,19 @@ def offline_page() -> None:
         return
     cov = np.array([[2.5**2, rho * 2.5 * 0.9], [rho * 2.5 * 0.9, 0.9**2]])
     pdf = power_net_mc((p_teg, p_sup), cov, n=n_mc)
-    st.write(f"mean {pdf.mean:.3f} W · σ {pdf.std:.3f} W · "
-             f"95% coverage [{pdf.coverage_95[0]:.3f}, {pdf.coverage_95[1]:.3f}] W")
+    st.write(
+        f"mean {pdf.mean:.3f} W · σ {pdf.std:.3f} W · "
+        f"95% coverage [{pdf.coverage_95[0]:.3f}, {pdf.coverage_95[1]:.3f}] W"
+    )
     st.bar_chart(pdf.density)
 
 
 def main() -> None:
     st.set_page_config(page_title="SHBT Workbench", layout="wide")
     st.title("SHBT zero-drift simulator — engineering workbench")
-    mode = st.sidebar.radio("Mode", ["Fabrication Workbench", "Offline Theoretical Closure"])
+    mode = st.sidebar.radio(
+        "Mode", ["Fabrication Workbench", "Offline Theoretical Closure"]
+    )
     if mode == "Fabrication Workbench":
         fabrication_page()
     else:

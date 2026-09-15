@@ -21,7 +21,9 @@ def compute_fatigue_lifetime_mc(
     if epsilon_f_prime <= 0 or c == 0:
         raise ValueError("epsilon_f_prime must be positive and c must be non-zero")
     if std_dev_strain <= 0 or iterations < 1:
-        raise ValueError("std_dev_strain must be positive and iterations must be positive")
+        raise ValueError(
+            "std_dev_strain must be positive and iterations must be positive"
+        )
     if not 0 < min_strain < max_strain:
         raise ValueError("strain bounds must satisfy 0 < min_strain < max_strain")
 

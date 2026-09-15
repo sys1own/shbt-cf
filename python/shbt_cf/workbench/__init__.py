@@ -7,7 +7,9 @@ from pathlib import Path
 import sys
 
 _legacy_path = Path(__file__).with_name("..") / "workbench.py"
-_spec = importlib.util.spec_from_file_location("shbt_cf._legacy_workbench", _legacy_path.resolve())
+_spec = importlib.util.spec_from_file_location(
+    "shbt_cf._legacy_workbench", _legacy_path.resolve()
+)
 if _spec is None or _spec.loader is None:
     raise ImportError(f"cannot load workbench implementation from {_legacy_path}")
 _legacy = importlib.util.module_from_spec(_spec)

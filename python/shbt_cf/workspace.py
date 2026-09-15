@@ -56,6 +56,9 @@ CRATES: dict[str, Crate] = {
                 }
             ),
         ),
+        Crate("shbt-rcwa"),
+        Crate("shbt-contact"),
+        Crate("shbt-py-bindings"),
     )
 }
 
@@ -98,10 +101,14 @@ class Workspace:
         env = dict(os.environ)
         extra = " ".join(STRICT_FP_RUSTFLAGS)
         existing = env.get("CARGO_BUILD_RUSTFLAGS", "")
-        env["CARGO_BUILD_RUSTFLAGS"] = f"{existing} {extra}".strip() if existing else extra
+        env["CARGO_BUILD_RUSTFLAGS"] = (
+            f"{existing} {extra}".strip() if existing else extra
+        )
         return env
 
-    def run(self, *args: str, capture: bool = False) -> subprocess.CompletedProcess[str]:
+    def run(
+        self, *args: str, capture: bool = False
+    ) -> subprocess.CompletedProcess[str]:
         """Run `cargo <args>` at the workspace root with strict-FP flags asserted."""
         cmd = [self.cargo, *args]
         try:
@@ -116,13 +123,20 @@ class Workspace:
         except FileNotFoundError as exc:
             raise WorkspaceError(f"cargo executable not found: {self.cargo}") from exc
         except subprocess.CalledProcessError as exc:
-            raise WorkspaceError(f"{' '.join(cmd)} failed with exit code {exc.returncode}") from exc
+            raise WorkspaceError(
+                f"{' '.join(cmd)} failed with exit code {exc.returncode}"
+            ) from exc
 
     def check(self, crates: Sequence[str] = ()) -> None:
         self.run("check", "--workspace", *_package_args(crates))
 
     def build(self, crates: Sequence[str] = (), release: bool = True) -> None:
-        self.run("build", "--workspace", *(("--release",) if release else ()), *_package_args(crates))
+        self.run(
+            "build",
+            "--workspace",
+            *(("--release",) if release else ()),
+            *_package_args(crates),
+        )
 
     def test(self, crates: Sequence[str] = ()) -> None:
         self.run("test", "--workspace", *_package_args(crates))
@@ -139,7 +153,9 @@ class Workspace:
         meta = self.metadata()
         names = {pkg["name"] for pkg in meta["packages"]}
         return {
-            pkg["name"]: frozenset(d["name"] for d in pkg["dependencies"] if d["name"] in names)
+            pkg["name"]: frozenset(
+                d["name"] for d in pkg["dependencies"] if d["name"] in names
+            )
             for pkg in meta["packages"]
         }
 
@@ -148,8 +164,14 @@ class Workspace:
         actual = self.actual_graph()
         expected = {name: c.workspace_deps for name, c in CRATES.items()}
         if actual != expected:
-            diff = {k: (sorted(expected.get(k, ())), sorted(actual.get(k, ()))) for k in expected | actual if expected.get(k) != actual.get(k)}
-            raise WorkspaceError(f"workspace topology mismatch (expected, actual): {diff}")
+            diff = {
+                k: (sorted(expected.get(k, ())), sorted(actual.get(k, ())))
+                for k in expected | actual
+                if expected.get(k) != actual.get(k)
+            }
+            raise WorkspaceError(
+                f"workspace topology mismatch (expected, actual): {diff}"
+            )
 
 
 def _package_args(crates: Sequence[str]) -> list[str]:

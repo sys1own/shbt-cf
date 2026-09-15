@@ -1,7 +1,14 @@
 import shutil
 import unittest
 
-from shbt_cf.workspace import CRATES, Crate, Workspace, WorkspaceError, build_order, find_workspace_root
+from shbt_cf.workspace import (
+    CRATES,
+    Crate,
+    Workspace,
+    WorkspaceError,
+    build_order,
+    find_workspace_root,
+)
 
 
 class TopologyTests(unittest.TestCase):

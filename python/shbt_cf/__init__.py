@@ -3,7 +3,7 @@
 Python owns parameter sweeps, optimisation loops and operator interfaces; all
 numerics run in the Rust crates. This package never enters high-frequency
 iteration loops itself — it drives `cargo` and, from Stage 5 onward, the PyO3
-native modules exported by `shbt-fabrication-hil`.
+native modules exported by the workspace PyO3 crates.
 """
 
 from shbt_cf.workspace import (

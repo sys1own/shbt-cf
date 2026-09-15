@@ -78,7 +78,11 @@ def find_cycle(graph: dict[str, set[str]]) -> list[str]:
             indegree[dep] -= 1
             if indegree[dep] == 0:
                 queue.append(dep)
-    return sorted(node for node, deg in indegree.items() if deg > 0) if visited != len(graph) else []
+    return (
+        sorted(node for node, deg in indegree.items() if deg > 0)
+        if visited != len(graph)
+        else []
+    )
 
 
 def check(graph: dict[str, set[str]]) -> list[str]:
@@ -107,7 +111,9 @@ def check(graph: dict[str, set[str]]) -> list[str]:
 
 
 def main(argv: list[str]) -> int:
-    manifest_dir = Path(argv[1]) if len(argv) > 1 else Path(__file__).resolve().parent.parent
+    manifest_dir = (
+        Path(argv[1]) if len(argv) > 1 else Path(__file__).resolve().parent.parent
+    )
     graph = workspace_graph(load_metadata(manifest_dir))
 
     for name in sorted(graph):
@@ -120,7 +126,9 @@ def main(argv: list[str]) -> int:
         for err in errors:
             print(f"  - {err}", file=sys.stderr)
         return 1
-    print("\nOK: workspace dependency graph is acyclic and matches the required topology.")
+    print(
+        "\nOK: workspace dependency graph is acyclic and matches the required topology."
+    )
     return 0
 
 
