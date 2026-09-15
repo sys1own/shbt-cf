@@ -151,6 +151,7 @@ pub struct PyMcNabbFosterSolver {
 impl PyMcNabbFosterSolver {
     #[new]
     #[pyo3(signature = (dx, diffusion_coeff, solubility, partial_molar_volume, c_l, hydrostatic_stress, trap_density, capture_rate, release_rate, temperature, interface_boundaries))]
+    #[allow(clippy::too_many_arguments)]
     fn new(
         dx: f64,
         diffusion_coeff: Vec<f64>,
@@ -441,6 +442,7 @@ fn chi2(residuals: Vec<f64>, weights: Vec<f64>) -> PyResult<f64> {
 /// `return_samples` is true.
 #[pyfunction]
 #[pyo3(signature = (mean, cov, n, seed=0x5eed, threads=4))]
+#[allow(clippy::type_complexity)]
 fn power_net_mc<'py>(
     py: Python<'py>,
     mean: Vec<f64>,

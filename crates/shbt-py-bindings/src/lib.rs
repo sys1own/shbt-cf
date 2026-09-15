@@ -272,6 +272,7 @@ fn solve_2d_rcwa_identity(
     ))
 }
 
+#[allow(clippy::too_many_arguments)]
 #[pyfunction]
 fn belleville_thermal_compliance(
     outer_radius: f64,

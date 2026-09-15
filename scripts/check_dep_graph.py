@@ -2,10 +2,11 @@
 """Validate the workspace crate dependency graph against the Stage 1 topology.
 
 Checks, using `cargo metadata`:
-  1. exactly the six expected crates are workspace members;
+    1. exactly the expected workspace crates are workspace members;
   2. the workspace-internal dependency graph is acyclic (Kahn's algorithm);
   3. each crate's workspace dependencies match the required topology exactly
-     (unidirectional: core-math <- domain crates <- fabrication-hil).
+    (unidirectional: core-math <- domain crates <- fabrication-hil, with
+    standalone RCWA/contact kernels and PyO3 bindings over RCWA).
 
 Exit status is non-zero on any violation so the script can gate CI.
 """
@@ -34,6 +35,9 @@ EXPECTED_TOPOLOGY: dict[str, frozenset[str]] = {
             "shbt-metrology-gum",
         }
     ),
+    "shbt-rcwa": frozenset(),
+    "shbt-contact": frozenset(),
+    "shbt-py-bindings": frozenset({"shbt-rcwa"}),
 }
 
 
