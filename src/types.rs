@@ -1,4 +1,7 @@
-#[derive(Debug, Clone, Copy, PartialEq)]
+use std::ops::{Add, Div, Mul, Neg, Sub};
+
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+#[repr(C)]
 pub struct Complex64 {
     pub re: f64,
     pub im: f64,
@@ -70,6 +73,46 @@ impl Complex64 {
             root_magnitude * (theta * 0.5).cos(),
             root_magnitude * (theta * 0.5).sin(),
         )
+    }
+}
+
+impl Add for Complex64 {
+    type Output = Self;
+    #[inline]
+    fn add(self, rhs: Self) -> Self {
+        Complex64::add(self, rhs)
+    }
+}
+
+impl Sub for Complex64 {
+    type Output = Self;
+    #[inline]
+    fn sub(self, rhs: Self) -> Self {
+        Complex64::sub(self, rhs)
+    }
+}
+
+impl Mul for Complex64 {
+    type Output = Self;
+    #[inline]
+    fn mul(self, rhs: Self) -> Self {
+        Complex64::mul(self, rhs)
+    }
+}
+
+impl Div for Complex64 {
+    type Output = Self;
+    #[inline]
+    fn div(self, rhs: Self) -> Self {
+        Complex64::div(self, rhs)
+    }
+}
+
+impl Neg for Complex64 {
+    type Output = Self;
+    #[inline]
+    fn neg(self) -> Self {
+        Self::new(-self.re, -self.im)
     }
 }
 

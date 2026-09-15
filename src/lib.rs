@@ -1,10 +1,16 @@
 pub mod floquet_dielectric;
+pub mod master_equation;
 pub mod phonon_kinetics;
 pub mod quadrature_precision;
 pub mod rcwa_3d;
 pub mod transport_controller;
 pub mod types;
 
+pub use master_equation::{compute_lindblad_derivative, run_simulation as run_coupled_simulation};
+pub use master_equation::{
+    rk4_adaptive_step, rk4_step, solve_bop_balance, AdaptiveStep, BopBalance, BopParams,
+    LindbladParams, Rho3, SimulationResult,
+};
 pub use types::Complex64;
 
 use floquet_dielectric::FloquetMatrixInverter;
