@@ -12,8 +12,8 @@ from shbt_cf.workspace import (
 
 
 class TopologyTests(unittest.TestCase):
-    def test_seven_crates(self):
-        self.assertEqual(len(CRATES), 7)
+    def test_crate_count(self):
+        self.assertEqual(len(CRATES), 10)
 
     def test_root_and_core_math_are_independent(self):
         self.assertEqual(CRATES["shbt-cf"].workspace_deps, frozenset())

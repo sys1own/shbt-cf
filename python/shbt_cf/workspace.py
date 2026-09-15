@@ -58,7 +58,7 @@ CRATES: dict[str, Crate] = {
         ),
         Crate("shbt-rcwa"),
         Crate("shbt-contact"),
-        Crate("shbt-py-bindings"),
+        Crate("shbt-py-bindings", frozenset({"shbt-rcwa"})),
     )
 }
 
