@@ -20,6 +20,7 @@
 
 mod complex_matrix;
 pub mod elastodynamics;
+pub mod floquet_dielectric;
 
 use complex_matrix::CMat;
 use shbt_core_math::precision::PrecisionMode;

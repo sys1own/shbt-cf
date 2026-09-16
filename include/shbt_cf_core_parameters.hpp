@@ -15,6 +15,17 @@ constexpr double HBAR_EV = 6.582119569e-16;         // eV s
 constexpr double ELEMENTARY_CHARGE = 1.602176634e-19; // C
 constexpr double EPSILON_0 = 8.8541878128e-12;       // F/m
 
+// update-11.1 Task 1 — Pd_{0.9132}Ir_{0.0868}D_x many-body / CFT parameters.
+constexpr double PD_IR_IRIDIUM_FRACTION = 0.0868;
+constexpr double PD_IR_DOS_STATES_EV_ATOM = 1.4606;
+constexpr double PD_IR_THOMAS_FERMI_LENGTH_ANGSTROM = 0.4137;
+constexpr double PD_IR_THOMAS_FERMI_LENGTH_M = 0.4137e-10;
+constexpr double SHBT_COHERENCE_FACTOR_C_COH = 0.8821;
+constexpr double SHBT_BOUNDARY_G_FACTOR_CHI_CFT = 0.9412;
+constexpr double SHBT_HOLOGRAPHIC_RESONANCE_FREQ_HZ = 6.92e8;
+constexpr double SHBT_SCREENING_SHIFT_UE_EV = 350.0034;
+constexpr double SHBT_HOLOGRAPHIC_NOISE_FLOOR_EV = 1e-35;
+
 struct MetallurgicalFatigueParameters {
     double bondline_thickness_tlp = 3.5e-6;
     double bondline_thickness_graded = 15.0e-6;
