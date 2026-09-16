@@ -194,6 +194,110 @@ fn inner_vec(a: [f64; 3], b: [f64; 3]) -> f64 {
     a.iter().zip(b.iter()).map(|(x, y)| x * y).sum()
 }
 
+/// Two-term non-isothermal Chaboche viscoplastic model for
+/// `Pd_{0.9132}Ir_{0.0868}` on a SiC substrate (update-11.1 Task 3).
+///
+/// Perzyna flow: `ε̇^vp_ij = (3/2) ṗ (s_ij − X'_ij)/J2(σ − X)` with
+/// `ṗ = ⟨f/K⟩^n`, `f = J2(σ − X) − R − σ_y(T)`, `R = Q(1 − e^{−bp})`.
+/// Dual kinematic backstress `X = X1 + X2` evolves as
+/// `Ẋ_k = (2/3)C_k(T) ε̇^vp − γ_k X_k ṗ + (1/C_k)(∂C_k/∂T) Ṫ X_k`.
+///
+/// All stresses in MPa.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ChabocheViscoplasticModel {
+    /// Viscosity reference stress `K` [MPa·s^(1/n)].
+    pub k_visco: f64,
+    /// Perzyna exponent `n`.
+    pub n_visco: f64,
+    /// Isotropic saturation stress `Q` [MPa].
+    pub q_iso: f64,
+    /// Isotropic rate `b`.
+    pub b_iso: f64,
+    /// Dynamic recovery `γ_1` of the first backstress term.
+    pub gamma1: f64,
+    /// Dynamic recovery `γ_2` of the second backstress term.
+    pub gamma2: f64,
+    /// First kinematic backstress component `X_1` [MPa].
+    pub back_stress_1: f64,
+    /// Second kinematic backstress component `X_2` [MPa].
+    pub back_stress_2: f64,
+}
+
+/// Single-cycle initial plastic strain increment bound.
+pub const DP_CYCLE_BOUND: f64 = 8.952e-4;
+
+impl ChabocheViscoplasticModel {
+    /// Pd–Ir film constants: `K = 60 MPa·s^{1/n}`, `n = 4`, `Q = 40 MPa`,
+    /// `b = 10`, `γ_1 = 500`, `γ_2 = 80`.
+    pub fn pd_ir() -> Self {
+        Self {
+            k_visco: 60.0,
+            n_visco: 4.0,
+            q_iso: 40.0,
+            b_iso: 10.0,
+            gamma1: 500.0,
+            gamma2: 80.0,
+            back_stress_1: 0.0,
+            back_stress_2: 0.0,
+        }
+    }
+
+    /// Temperature-dependent yield `σ_y(T) = 220 − 0.2(T − 298.15)` [MPa].
+    pub fn yield_strength(&self, temp_k: f64) -> f64 {
+        220.0 - 0.2 * (temp_k - 298.15)
+    }
+
+    /// `C_1(T) = 50.0e3 − 61.54(T − 298.15)` [MPa].
+    pub fn c1_modulus(&self, temp_k: f64) -> f64 {
+        50.0e3 - 61.54 * (temp_k - 298.15)
+    }
+
+    /// `C_2(T) = 15.0e3 − 21.54(T − 298.15)` [MPa].
+    pub fn c2_modulus(&self, temp_k: f64) -> f64 {
+        15.0e3 - 21.54 * (temp_k - 298.15)
+    }
+
+    /// Isotropic hardening `R(p) = Q(1 − e^{−b p})` [MPa].
+    pub fn isotropic_hardening(&self, p: f64) -> f64 {
+        self.q_iso * (1.0 - (-self.b_iso * p).exp())
+    }
+
+    /// Total backstress `X = X_1 + X_2` [MPa].
+    pub fn back_stress(&self) -> f64 {
+        self.back_stress_1 + self.back_stress_2
+    }
+
+    /// Advances the dual backstress terms by `dt` under viscoplastic strain
+    /// rate `deps_vp`, accumulated plastic rate `dp`, and temperature rate
+    /// `dtemp`, at temperature `temp_k`.
+    pub fn evolve_backstress(&mut self, deps_vp: f64, dp: f64, dtemp: f64, temp_k: f64, dt: f64) {
+        let c1 = self.c1_modulus(temp_k);
+        let c2 = self.c2_modulus(temp_k);
+        self.back_stress_1 += ((2.0 / 3.0) * c1 * deps_vp - self.gamma1 * self.back_stress_1 * dp
+            + (-61.54 / c1) * dtemp * self.back_stress_1)
+            * dt;
+        self.back_stress_2 += ((2.0 / 3.0) * c2 * deps_vp - self.gamma2 * self.back_stress_2 * dp
+            + (-21.54 / c2) * dtemp * self.back_stress_2)
+            * dt;
+    }
+
+    /// Perzyna accumulated-plastic-strain rate `ṗ = ⟨f/K⟩^n`.
+    pub fn plastic_rate(&self, overstress: f64) -> f64 {
+        (overstress / self.k_visco).max(0.0).powf(self.n_visco)
+    }
+
+    /// Enforces the single-cycle plastic-increment bound.
+    ///
+    /// # Panics
+    /// If `dp_cycle > 8.952e-4`.
+    pub fn assert_initial_increment(dp_cycle: f64) {
+        assert!(
+            dp_cycle <= DP_CYCLE_BOUND,
+            "Initial plastic strain increment exceeds single-cycle bound"
+        );
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -222,5 +326,34 @@ mod tests {
         assert!(rate.is_finite() && state.stress[0][0].is_finite());
         let kernel = somigliana_displacement_kernel([1.0, 0.0, 0.0], 0.3, 1.0);
         assert_eq!(kernel[0][1], kernel[1][0]);
+    }
+
+    #[test]
+    fn pd_ir_model_temperature_functions_match_spec() {
+        let m = ChabocheViscoplasticModel::pd_ir();
+        assert!((m.yield_strength(298.15) - 220.0).abs() < 1e-9);
+        assert!((m.yield_strength(623.15) - 155.0).abs() < 1e-9);
+        assert!((m.c1_modulus(298.15) - 50.0e3).abs() < 1e-9);
+        assert!((m.c2_modulus(623.15) - 15.0e3 + 21.54 * 325.0).abs() < 1e-9);
+        assert_eq!(m.back_stress(), 0.0);
+    }
+
+    #[test]
+    fn initial_increment_bound_enforced() {
+        ChabocheViscoplasticModel::assert_initial_increment(8.952e-4);
+    }
+
+    #[test]
+    #[should_panic(expected = "single-cycle bound")]
+    fn initial_increment_over_bound_panics() {
+        ChabocheViscoplasticModel::assert_initial_increment(1.0e-3);
+    }
+
+    #[test]
+    fn dual_backstress_evolves() {
+        let mut m = ChabocheViscoplasticModel::pd_ir();
+        m.evolve_backstress(1e-5, 1e-6, 0.0, 623.15, 1.0);
+        assert!(m.back_stress_1 > 0.0 && m.back_stress_2 > 0.0);
+        assert!(m.back_stress_1 > m.back_stress_2); // C1 > C2
     }
 }

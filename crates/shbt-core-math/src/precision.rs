@@ -30,6 +30,96 @@ pub const MAX_ARBITRARY_BITS: u32 = 512;
 /// Mantissa width of IEEE 754 binary64, including the implicit bit.
 pub const F64_MANTISSA_BITS: u32 = 53;
 
+/// Mantissa bit depth of the 512-bit precision tier used by the Floquet
+/// dielectric inversion (update-11.1 Task 1). A 512-bit register layout
+/// carries 440 mantissa bits.
+pub const PRECISION_BITS: u32 = 440;
+
+/// 512-bit complex scalar backed by two [`rug::Float`]s at
+/// [`PRECISION_BITS`] mantissa bits.
+///
+/// All arithmetic is in place so the 15 625² Floquet tensor does not
+/// allocate per elementary operation.
+#[derive(Clone, Debug)]
+pub struct Complex512 {
+    /// Real part.
+    pub re: rug::Float,
+    /// Imaginary part.
+    pub im: rug::Float,
+}
+
+impl Complex512 {
+    /// Creates a scalar from `f64` parts at [`PRECISION_BITS`].
+    pub fn new(re: f64, im: f64) -> Self {
+        assert_eq!(
+            PRECISION_BITS, 440,
+            "512-bit float requires 440 mantissa bits"
+        );
+        Self {
+            re: rug::Float::with_val(PRECISION_BITS, re),
+            im: rug::Float::with_val(PRECISION_BITS, im),
+        }
+    }
+
+    /// `0 + 0i` at [`PRECISION_BITS`].
+    pub fn zero() -> Self {
+        Self::new(0.0, 0.0)
+    }
+
+    /// `1 + 0i` at [`PRECISION_BITS`].
+    pub fn one() -> Self {
+        Self::new(1.0, 0.0)
+    }
+
+    /// `self += rhs`.
+    pub fn add(&mut self, rhs: &Self) {
+        self.re += &rhs.re;
+        self.im += &rhs.im;
+    }
+
+    /// `self -= rhs`.
+    pub fn sub(&mut self, rhs: &Self) {
+        self.re -= &rhs.re;
+        self.im -= &rhs.im;
+    }
+
+    /// `self *= rhs` (complex product).
+    pub fn mul(&mut self, rhs: &Self) {
+        let re = rug::Float::with_val(PRECISION_BITS, &self.re * &rhs.re - &self.im * &rhs.im);
+        let im = rug::Float::with_val(PRECISION_BITS, &self.re * &rhs.im + &self.im * &rhs.re);
+        self.re = re;
+        self.im = im;
+    }
+
+    /// `self /= rhs` (complex quotient, `rhs · conj(rhs)` real division).
+    pub fn div(&mut self, rhs: &Self) {
+        let denom = rug::Float::with_val(PRECISION_BITS, &rhs.re * &rhs.re + &rhs.im * &rhs.im);
+        let re = rug::Float::with_val(PRECISION_BITS, &self.re * &rhs.re + &self.im * &rhs.im);
+        let im = rug::Float::with_val(PRECISION_BITS, &self.im * &rhs.re - &self.re * &rhs.im);
+        self.re = re / &denom;
+        self.im = im / &denom;
+    }
+
+    /// `|self|²` as a real [`rug::Float`].
+    pub fn norm_sqr(&self) -> rug::Float {
+        rug::Float::with_val(PRECISION_BITS, &self.re * &self.re + &self.im * &self.im)
+    }
+
+    /// `|self|` (complex modulus) as a real [`rug::Float`].
+    pub fn norm(&self) -> rug::Float {
+        self.norm_sqr().sqrt()
+    }
+}
+
+/// Releases MPFR's cached allocations. Call after a large arbitrary-precision
+/// solve completes so the freed cache does not linger in the process.
+///
+/// MPFR's cache is process-global; solvers call this after a large inversion
+/// completes and no other arbitrary-precision work is in flight.
+pub fn free_float_cache() {
+    rug::float::free_cache(rug::float::FreeCache::All);
+}
+
 impl PrecisionMode {
     /// Chooses a mantissa width for an arbitrary-precision solve from the
     /// estimated condition number of the operator. Roughly `log2(kappa)` bits
@@ -115,6 +205,32 @@ mod tests {
         assert_eq!(
             PrecisionMode::arbitrary_for_condition_number(1e300),
             PrecisionMode::Arbitrary { mantissa_bits: 512 }
+        );
+    }
+
+    #[test]
+    fn complex512_arithmetic() {
+        assert_eq!(PRECISION_BITS, 440);
+        let mut a = Complex512::new(1.5, -2.0);
+        let b = Complex512::new(0.25, 3.0);
+        a.add(&b);
+        assert_eq!(a.re, 1.75);
+        assert_eq!(a.im, 1.0);
+        a.sub(&b);
+        assert_eq!(a.re, 1.5);
+        assert_eq!(a.im, -2.0);
+        // (1.5 - 2i)(0.25 + 3i) = 6.375 + 4i
+        a.mul(&b);
+        assert_eq!(a.re, 6.375);
+        assert_eq!(a.im, 4.0);
+        a.div(&b);
+        assert!(
+            rug::Float::with_val(PRECISION_BITS, &a.re - 1.5).abs()
+                < rug::Float::with_val(PRECISION_BITS, 1e-100)
+        );
+        assert!(
+            rug::Float::with_val(PRECISION_BITS, &a.im + 2.0).abs()
+                < rug::Float::with_val(PRECISION_BITS, 1e-100)
         );
     }
 

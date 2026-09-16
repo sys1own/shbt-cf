@@ -15,6 +15,38 @@ constexpr double HBAR_EV = 6.582119569e-16;         // eV s
 constexpr double ELEMENTARY_CHARGE = 1.602176634e-19; // C
 constexpr double EPSILON_0 = 8.8541878128e-12;       // F/m
 
+// update-11.1 Task 1 — Pd_{0.9132}Ir_{0.0868}D_x many-body / CFT parameters.
+constexpr double PD_IR_IRIDIUM_FRACTION = 0.0868;
+constexpr double PD_IR_DOS_STATES_EV_ATOM = 1.4606;
+constexpr double PD_IR_THOMAS_FERMI_LENGTH_ANGSTROM = 0.4137;
+constexpr double PD_IR_THOMAS_FERMI_LENGTH_M = 0.4137e-10;
+constexpr double SHBT_COHERENCE_FACTOR_C_COH = 0.8821;
+constexpr double SHBT_BOUNDARY_G_FACTOR_CHI_CFT = 0.9412;
+constexpr double SHBT_HOLOGRAPHIC_RESONANCE_FREQ_HZ = 6.92e8;
+constexpr double SHBT_SCREENING_SHIFT_UE_EV = 350.0034;
+constexpr double SHBT_HOLOGRAPHIC_NOISE_FLOOR_EV = 1e-35;
+
+// update-11.1 Task 2 — microchannel cold plate, TEG/BOP ledger, loading caps.
+constexpr double MHS_COLD_PLATE_WIDTH_M = 0.120;
+constexpr double MHS_COLD_PLATE_LENGTH_M = 0.120;
+constexpr double MHS_CHANNEL_WIDTH_M = 250.0e-6;
+constexpr double MHS_FIN_WIDTH_M = 250.0e-6;
+constexpr double MHS_CHANNEL_HEIGHT_M = 1500.0e-6;
+constexpr int MHS_CHANNEL_COUNT = 240;
+constexpr double MHS_COOLANT_FLOW_RATE_M3_S = 3.0e-5; // 1.8 L/min
+constexpr double MHS_WASTE_HEAT_Q_COLD_W = 2047.86;
+constexpr double MHS_PRESSURE_DROP_PA = 6848.77;
+constexpr double MHS_PUMP_POWER_W = 0.3161;
+constexpr double MHS_TOTAL_THERMAL_RESISTANCE_KW = 0.027702;
+constexpr double TEG_HOT_SIDE_TEMP_K = 600.0;
+constexpr double TEG_COLD_SIDE_TEMP_K = 357.47;
+constexpr double TEG_MAX_BASE_TEMP_LIMIT_K = 358.0;
+constexpr double TEG_CONVERSION_EFFICIENCY = 0.1079;
+constexpr double BOP_PARASITIC_TOTAL_W = 200.3161;
+constexpr double BOP_NET_EXPORT_POWER_W = 47.4039;
+constexpr double D_PD_MAX_PHYSICAL_LOADING_CAP = 0.904;
+constexpr double D_PD_SIMULATION_UPPER_BOUND = 0.81;
+
 struct MetallurgicalFatigueParameters {
     double bondline_thickness_tlp = 3.5e-6;
     double bondline_thickness_graded = 15.0e-6;

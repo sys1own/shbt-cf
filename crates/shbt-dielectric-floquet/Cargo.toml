@@ -15,6 +15,7 @@ path = "src/lib.rs"
 shbt-core-math = { workspace = true }
 faer = { version = "0.22", default-features = false, features = ["std"] }
 num-complex = "0.4"
+rug = { workspace = true }
 
 [lints]
 workspace = true

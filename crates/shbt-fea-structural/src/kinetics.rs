@@ -84,6 +84,27 @@ pub fn weertman_creep_rate(input: WeertmanInputs) -> f64 {
     density * input.burgers_vector * flux.abs()
 }
 
+/// Leak-before-break margin evaluation (update-11.1 Task 3).
+///
+/// `2a_c = (2/π)(K_IH/(Y·σ_m))²` — critical through-wall crack length [mm];
+/// `M_a = 2a_c / a_leak` — LBB margin; compliant iff `M_a ≥ 2.0`.
+///
+/// `k_ih` in MPa·√m, `sigma_m` in MPa, `a_leak_mm` in mm.
+/// Returns `(two_a_c_mm, margin, is_compliant)`.
+pub fn evaluate_lbb_margin(
+    k_ih: f64,
+    sigma_m: f64,
+    y_factor: f64,
+    a_leak_mm: f64,
+) -> (f64, f64, bool) {
+    let pi = std::f64::consts::PI;
+    let a_c_m = (1.0 / pi) * (k_ih / (y_factor * sigma_m)).powi(2);
+    let two_a_c_mm = 2.0 * a_c_m * 1000.0;
+    let margin = two_a_c_mm / a_leak_mm;
+    let is_compliant = margin >= 2.0;
+    (two_a_c_mm, margin, is_compliant)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -97,5 +118,22 @@ mod tests {
         let before = state.concentration.iter().sum::<f64>();
         state.step(1e-4, 1e-3, 0.1, 1.0);
         assert!((state.concentration.iter().sum::<f64>() - before).abs() < 1e-12);
+    }
+
+    #[test]
+    fn lbb_margin_matches_spec_validation() {
+        let (two_a_c, margin, compliant) = evaluate_lbb_margin(45.0, 180.0, 1.12, 12.0);
+        assert!(
+            (two_a_c - 31.6).abs() < 0.2,
+            "Critical crack length mismatch"
+        );
+        assert!(margin >= 2.6, "LBB margin safety check failed");
+        assert!(compliant);
+    }
+
+    #[test]
+    fn lbb_margin_flags_noncompliant() {
+        let (_, margin, compliant) = evaluate_lbb_margin(20.0, 300.0, 1.12, 12.0);
+        assert!(margin < 2.0 && !compliant);
     }
 }

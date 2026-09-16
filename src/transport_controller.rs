@@ -114,6 +114,94 @@ impl StateSpaceMpc {
     }
 }
 
+/// Microchannel cold plate geometry and coolant state (update-11.1 Task 2).
+pub struct TransportController {
+    /// Cold plate width `W` [m].
+    pub cold_plate_width_m: f64,
+    /// Cold plate length `L` [m].
+    pub cold_plate_length_m: f64,
+    /// Channel width `w_c` [m].
+    pub channel_width_m: f64,
+    /// Fin thickness `w_w` [m].
+    pub fin_width_m: f64,
+    /// Channel height `H_c` [m].
+    pub channel_height_m: f64,
+    /// Number of microchannels `N_ch`.
+    pub channel_count: usize,
+    /// Volumetric coolant flow `V̇` [m³/s].
+    pub coolant_flow_rate_m3_s: f64,
+    /// Waste heat dumped into the cold side `Q_cold` [W].
+    pub waste_heat_q_cold_w: f64,
+}
+
+/// TEG + balance-of-plant power ledger for one `(T_hot, T_cold)` operating
+/// point.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct BopLedgerResult {
+    /// TEG conversion efficiency `η_TEG` (dimensionless).
+    pub eta_teg: f64,
+    /// Total thermal power `P_thermal = Q_cold / (1 − η_TEG)` [W].
+    pub p_thermal_w: f64,
+    /// TEG electric output `P_TEG = P_thermal · η_TEG` [W].
+    pub p_teg_w: f64,
+    /// Parasitic draw `P_laser + P_aux + P_pump` [W].
+    pub p_parasitic_w: f64,
+    /// Net export `P_TEG − ΣP_parasitic` [W].
+    pub p_net_w: f64,
+}
+
+/// Production cold plate: 120 × 120 mm, 240 channels of 250 µm × 1500 µm,
+/// 1.8 L/min water, 2047.86 W cold-side waste heat.
+impl TransportController {
+    /// Production cold-plate configuration from the update-11.1 spec.
+    pub fn new() -> Self {
+        Self {
+            cold_plate_width_m: 0.120,
+            cold_plate_length_m: 0.120,
+            channel_width_m: 250.0e-6,
+            fin_width_m: 250.0e-6,
+            channel_height_m: 1500.0e-6,
+            channel_count: 240,
+            coolant_flow_rate_m3_s: 3.0e-5,
+            waste_heat_q_cold_w: 2047.86,
+        }
+    }
+
+    /// Evaluates the TEG/BOP ledger at `ZT_avg = 1.5`.
+    ///
+    /// `η_TEG = ((T_h − T_c)/T_h) · (√(1+ZT) − 1)/(√(1+ZT) + T_c/T_h)`,
+    /// `P_thermal = Q_cold/(1−η)`, `P_TEG = P_thermal·η`,
+    /// `P_parasitic = 150 + 50 + 0.3161`, `P_net = P_TEG − P_parasitic`.
+    ///
+    /// # Panics
+    /// If `t_cold >= 358.0` K — the cold-side safety limit.
+    pub fn evaluate_bop_ledger(&self, t_hot: f64, t_cold: f64) -> BopLedgerResult {
+        assert!(
+            t_cold < 358.0,
+            "Cold side temperature exceeded 358.0 K safety limit"
+        );
+        let eta_teg = ((t_hot - t_cold) / t_hot)
+            * (((1.5 + 1.0f64).sqrt() - 1.0) / ((1.5 + 1.0f64).sqrt() + (t_cold / t_hot)));
+        let p_thermal = self.waste_heat_q_cold_w / (1.0 - eta_teg);
+        let p_teg = p_thermal * eta_teg;
+        let p_parasitic = 150.0 + 50.0 + 0.3161;
+        let p_net = p_teg - p_parasitic;
+        BopLedgerResult {
+            eta_teg,
+            p_thermal_w: p_thermal,
+            p_teg_w: p_teg,
+            p_parasitic_w: p_parasitic,
+            p_net_w: p_net,
+        }
+    }
+}
+
+impl Default for TransportController {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub fn default_transport_controller() -> (DeuteriumTransport3D, StateSpaceMpc) {
     let transport = DeuteriumTransport3D::new(8, 8, 8, 1.0, 1.0, 1.0, 1e-10, 1e-6, 550.0);
     let a = vec![
@@ -136,4 +224,28 @@ pub fn default_transport_controller() -> (DeuteriumTransport3D, StateSpaceMpc) {
 
 pub fn complex_response(value: f64) -> Complex64 {
     Complex64::new(value, 0.0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn bop_ledger_matches_spec_operating_point() {
+        let ctl = TransportController::new();
+        let r = ctl.evaluate_bop_ledger(600.0, 357.47);
+        assert!((r.eta_teg - 0.1079).abs() < 1e-3, "eta_teg = {}", r.eta_teg);
+        assert!((r.p_thermal_w - 2295.58).abs() < 1.0);
+        assert!((r.p_teg_w - 247.72).abs() < 0.5);
+        assert!((r.p_parasitic_w - 200.3161).abs() < 1e-9);
+        assert!((r.p_net_w - 47.4039).abs() < 0.5, "p_net = {}", r.p_net_w);
+        assert!(r.p_net_w > 0.0, "net positive export");
+    }
+
+    #[test]
+    #[should_panic(expected = "Cold side temperature exceeded 358.0 K safety limit")]
+    fn bop_ledger_rejects_overlimit_cold_side() {
+        let ctl = TransportController::new();
+        let _ = ctl.evaluate_bop_ledger(600.0, 358.0);
+    }
 }
