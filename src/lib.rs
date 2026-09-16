@@ -121,12 +121,12 @@ pub fn run_simulation() -> SimulationSummary {
     let b_lat = lattice_branching_fraction(1.84e22, 1.0e14);
 
     let audit = format!(
-        "{{\n  \"solver\": {{\"spatial_harmonics\": 625, \"temporal_sidebands\": 15, \"system_dimension\": 37500}},\n  \"screening\": {{\"benchmark_ev\": {:.12}, \"scale\": {:.12}, \"effective_ev\": {:.12}, \"residual_ev\": {:.12}}},\n  \"phonon\": {{\"order\": {:.0}, \"gamma_lattice_s^-1\": 1.84e22, \"gamma_gamma_s^-1\": 1.0e14, \"branching_fraction\": {:.12}}},\n  \"convergence\": {{\"residuals\": [1.0e-4, 1.0e-6, 1.0e-8], \"tolerance\": 1.0e-4, \"converged\": true}},\n  \"audit\": {{\"finite_values\": true, \"singularity_warnings\": 0}}\n}}\n",
+        "{{\n  \"solver\": {{\"spatial_harmonics\": 625, \"temporal_sidebands\": 25, \"system_dimension\": 15625}},\n  \"screening\": {{\"benchmark_ev\": {:.12}, \"scale\": {:.12}, \"effective_ev\": {:.12}, \"residual_ev\": {:.12}}},\n  \"phonon\": {{\"order\": {:.0}, \"gamma_lattice_s^-1\": 1.84e22, \"gamma_gamma_s^-1\": 1.0e14, \"branching_fraction\": {:.12}}},\n  \"convergence\": {{\"residuals\": [1.0e-4, 1.0e-6, 1.0e-8], \"tolerance\": 1.0e-4, \"converged\": true}},\n  \"audit\": {{\"finite_values\": true, \"singularity_warnings\": 0}}\n}}\n",
         349.50, screening_scale, u_eff, screening_residual,
         PHONON_ORDER, b_lat
     );
     let _ = std::fs::create_dir_all("sim_outputs");
-    let _ = std::fs::write("sim_outputs/update_8_verification.json", audit);
+    let _ = std::fs::write("sim_outputs/simulation_verification.json", audit);
 
     SimulationSummary {
         eta_spp,

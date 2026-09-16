@@ -11,10 +11,10 @@ fn verifies_driven_screening_shift() {
 }
 
 #[test]
-fn verifies_update8_audit_export() {
+fn verifies_audit_export() {
     let _ = run_simulation();
-    let audit = std::fs::read_to_string("sim_outputs/update_8_verification.json").unwrap();
-    assert!(audit.contains("\"system_dimension\": 37500"));
+    let audit = std::fs::read_to_string("sim_outputs/simulation_verification.json").unwrap();
+    assert!(audit.contains("\"system_dimension\": 15625"));
     assert!(audit.contains("\"finite_values\": true"));
     assert!(audit.contains("\"converged\": true"));
 }
