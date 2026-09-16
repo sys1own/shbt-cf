@@ -303,7 +303,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn material_constants_match_update8_table() {
+    fn material_constants_match_spec_table() {
         assert_eq!(ChabocheMaterial::INCONEL_718.youngs_modulus, 172e9);
         assert_eq!(ChabocheMaterial::TLP_AG.yield_stress, 45e6);
     }

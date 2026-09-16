@@ -147,7 +147,7 @@ mod tests {
     }
 
     #[test]
-    fn update8_dimension_is_explicit_without_dense_allocation() {
+    fn floquet_dimension_is_explicit_without_dense_allocation() {
         assert_eq!(FloquetTruncation::UPDATE_8.harmonics(), 9375);
         assert_eq!(FloquetTruncation::UPDATE_8.system_dimension(), 37500);
     }
