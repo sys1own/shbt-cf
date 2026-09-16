@@ -304,10 +304,94 @@ fn belleville_thermal_compliance(
     Ok((force / stiffness + thermal_deflection, stiffness))
 }
 
+/// Pd_{0.9132}Ir_{0.0868} Chaboche model mirror (update-11.1 Task 3).
+///
+/// Mirrors `shbt_fea_structural::viscoplastic::ChabocheViscoplasticModel`;
+/// duplicated here because the workspace topology fixes this crate's
+/// dependency set to `shbt-rcwa` only (see `scripts/check_dep_graph.py`).
+#[pyclass]
+#[derive(Clone, Copy, Debug)]
+pub struct PyChabocheSolver {
+    #[pyo3(get)]
+    pub k_visco: f64,
+    #[pyo3(get)]
+    pub n_visco: f64,
+    #[pyo3(get)]
+    pub q_iso: f64,
+    #[pyo3(get)]
+    pub b_iso: f64,
+    #[pyo3(get)]
+    pub gamma1: f64,
+    #[pyo3(get)]
+    pub gamma2: f64,
+}
+
+#[pymethods]
+impl PyChabocheSolver {
+    /// Pd–Ir film constants: `K = 60`, `n = 4`, `Q = 40`, `b = 10`,
+    /// `γ_1 = 500`, `γ_2 = 80` (MPa units).
+    #[new]
+    fn new() -> Self {
+        Self {
+            k_visco: 60.0,
+            n_visco: 4.0,
+            q_iso: 40.0,
+            b_iso: 10.0,
+            gamma1: 500.0,
+            gamma2: 80.0,
+        }
+    }
+
+    /// `σ_y(T) = 220 − 0.2(T − 298.15)` [MPa].
+    fn yield_strength(&self, temp_k: f64) -> f64 {
+        220.0 - 0.2 * (temp_k - 298.15)
+    }
+
+    /// `C_1(T)` [MPa].
+    fn c1_modulus(&self, temp_k: f64) -> f64 {
+        50.0e3 - 61.54 * (temp_k - 298.15)
+    }
+
+    /// `C_2(T)` [MPa].
+    fn c2_modulus(&self, temp_k: f64) -> f64 {
+        15.0e3 - 21.54 * (temp_k - 298.15)
+    }
+
+    /// EPFM leak-before-break evaluation: returns
+    /// `(two_a_c_mm, margin, is_compliant)`; mirrors
+    /// `shbt_fea_structural::kinetics::evaluate_lbb_margin`.
+    #[staticmethod]
+    fn evaluate_lbb_margin(
+        k_ih: f64,
+        sigma_m: f64,
+        y_factor: f64,
+        a_leak_mm: f64,
+    ) -> (f64, f64, bool) {
+        let a_c_m = (1.0 / std::f64::consts::PI) * (k_ih / (y_factor * sigma_m)).powi(2);
+        let two_a_c_mm = 2.0 * a_c_m * 1000.0;
+        let margin = two_a_c_mm / a_leak_mm;
+        (two_a_c_mm, margin, margin >= 2.0)
+    }
+
+    /// Elastic-shakedown check at cycle 50: `dp_cycle <= 5.15e-8`.
+    fn verify_shakedown_state(&self, cycle: usize, dp_cycle: f64) -> PyResult<bool> {
+        if cycle >= 50 {
+            if dp_cycle > 5.15e-8 {
+                return Err(PyValueError::new_err(
+                    "Elastic shakedown failure at cycle 50",
+                ));
+            }
+            return Ok(true);
+        }
+        Ok(false)
+    }
+}
+
 #[pymodule]
 fn shbt_cf_bindings(_py: Python<'_>, module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<PyTransportConfig>()?;
     module.add_class::<PyQuantumCoherenceSolver>()?;
+    module.add_class::<PyChabocheSolver>()?;
     module.add_function(wrap_pyfunction!(solve_mcnabb_foster_transport, module)?)?;
     module.add_function(wrap_pyfunction!(solve_2d_rcwa_identity, module)?)?;
     module.add_function(wrap_pyfunction!(belleville_thermal_compliance, module)?)?;

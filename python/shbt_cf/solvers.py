@@ -149,3 +149,16 @@ def run_coupled_simulation(
         "q_total": out[1],
         "p_compressor": out[2],
     }
+
+
+def verify_shakedown_state(cycle: int, dp_cycle: float) -> bool:
+    """Elastic-shakedown check for the Chaboche cycle series (update-11.1 Task 3).
+
+    From cycle 50 onward the plastic strain increment must satisfy
+    ``dp_cycle <= 5.15e-8``; exceeding it raises ``AssertionError``.
+    Returns ``True`` only once the shakedown bound is verified.
+    """
+    if cycle >= 50:
+        assert dp_cycle <= 5.15e-8, "Elastic shakedown failure at cycle 50"
+        return True
+    return False
