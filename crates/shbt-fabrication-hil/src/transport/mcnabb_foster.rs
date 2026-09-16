@@ -98,6 +98,81 @@ impl McNabbFosterSolver {
     }
 }
 
+/// Maximum physical atomic loading ratio `x_max` (D/Pd) before rupture.
+pub const D_PD_MAX_PHYSICAL_LOADING_CAP: f64 = 0.904;
+/// Practical operational loading cap applied in simulation.
+pub const D_PD_SIMULATION_UPPER_BOUND: f64 = 0.81;
+/// Hydrostatic yield strength at 623.15 K [MPa]; exceeding `x_max` requires
+/// stress beyond this limit.
+pub const SIGMA_Y_HT_MPA: f64 = 155.0;
+
+/// Soret stress-coupled diffusion flux
+/// `J = −D_eff (∇C_L − (C_L V_H / (R T)) ∇σ_h)`.
+///
+/// `grad_c` is the lattice concentration gradient and `grad_sigma_h` the
+/// hydrostatic stress gradient, in consistent units.
+pub fn compute_soret_flux(c_l: f64, grad_c: f64, grad_sigma_h: f64, temp: f64, d_eff: f64) -> f64 {
+    let v_h = 1.7e-6; // m^3/mol
+    let r_gas = 8.314; // J/(mol K)
+    -d_eff * (grad_c - (c_l * v_h / (r_gas * temp)) * grad_sigma_h)
+}
+
+/// Enforces the physical loading cap on the atomic ratio D/Pd.
+///
+/// Above `x_max = 0.904` the required hydrostatic stress exceeds the 155 MPa
+/// high-temperature yield strength, so reaching it mechanically is
+/// impossible; this is a hard assertion. Ratios at or below `x_max` are
+/// clamped to the operational bound `0.81`.
+///
+/// # Panics
+/// If `loading_ratio > 0.904` while `sigma_h <= 155.0` MPa.
+pub fn enforce_loading_cap(loading_ratio: f64, sigma_h: f64) -> f64 {
+    if loading_ratio > D_PD_MAX_PHYSICAL_LOADING_CAP {
+        assert!(
+            sigma_h > SIGMA_Y_HT_MPA,
+            "Loading ratio > 0.904 requires stress exceeding yield strength (155 MPa)"
+        );
+        return D_PD_MAX_PHYSICAL_LOADING_CAP;
+    }
+    loading_ratio.min(D_PD_SIMULATION_UPPER_BOUND)
+}
+
 fn r_const() -> f64 {
     8.314462618
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn soret_flux_reduces_to_fickian_without_stress_gradient() {
+        let j = compute_soret_flux(1.0, 5.0, 0.0, 623.15, 1e-11);
+        assert!((j - -5.0e-11).abs() < 1e-20);
+    }
+
+    #[test]
+    fn soret_flux_includes_stress_drift_term() {
+        // J = -D (∇c − c·V_H/(RT)·∇σ) — stress term raises the flux here.
+        let j = compute_soret_flux(1.0, 0.0, 1.0e9, 623.15, 1e-11);
+        let expect = 1e-11 * (1.7e-6 / (8.314 * 623.15)) * 1.0e9;
+        assert!((j - expect).abs() < 1e-6 * expect.abs().max(1e-20));
+    }
+
+    #[test]
+    fn loading_cap_clamps_to_operational_bound() {
+        assert_eq!(enforce_loading_cap(0.9, 100.0), 0.81);
+        assert_eq!(enforce_loading_cap(0.5, 100.0), 0.5);
+    }
+
+    #[test]
+    fn loading_cap_above_max_clamps_when_stress_exceeds_yield() {
+        assert_eq!(enforce_loading_cap(0.95, 1718.36), 0.904);
+    }
+
+    #[test]
+    #[should_panic(expected = "requires stress exceeding yield strength")]
+    fn loading_cap_above_max_panics_below_yield_stress() {
+        let _ = enforce_loading_cap(0.95, 100.0);
+    }
 }
