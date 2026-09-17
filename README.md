@@ -189,7 +189,3 @@ The native bindings layer (`shbt-py-bindings` and `shbt-fabrication-hil`) export
 
 3. **Multiphysics Integration Pipeline (`tests/test_full_multiphysics_pipeline.py` & `tests/verification_tests.rs`):**
 * Validates full end-to-end integration across Floquet dielectric matrix assembly, RCWA optical enhancement, structural FEA deformation, closed-loop thermal power ledger, and HIL telemetry streaming.
-
-
-
-```
