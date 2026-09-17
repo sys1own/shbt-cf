@@ -51,7 +51,7 @@ The current baseline simulation state (`sim_outputs/simulation_verification.json
 | **Dynamic Screening** | Effective Barrier Shift | **$350.0000\text{ eV}$** (Benchmark: $349.50\text{ eV}$, Scale: $1.001431$, Residual: $0.00\text{ eV}$) |
 | **Phonon Kinetics** | Branching Fraction | **$0.999999994565$** ($\Gamma_{\text{lattice}} = 1.84 \times 10^{22}\text{ s}^{-1}$, Order: $6.92 \times 10^8$) |
 | **Master Power Ledger** | Total Thermal Output ($P_{\text{thermal}}$) | **$3093.4400\text{ W}$** ($2911.40\text{ W}$ Fusion + $182.04\text{ W}$ Optical Absorbed) |
-| | TEG Electrical Generated ($P_{\text{teg\_elec}}$) | **$1045.5827\text{ W}$** (33.80% conversion efficiency) |
+| | TEG Electrical Generated $P_{\mathrm{teg\_elec}}$ | **$1045.5827\text{ W}$** (33.80% conversion efficiency) |
 | | Total Parasitic Load ($P_{\text{parasitic}}$) | **$538.2632\text{ W}$** (Primary Pump: $27.2432\text{ W}$, Chiller Comp: $58.3011\text{ W}$) |
 | | Net Electrical Output ($P_{\text{net,complete}}$) | **$+507.3195\text{ W}$** |
 | | Cold-Side Rejection ($P_{\text{rejected}}$) | **$2047.8573\text{ W}$** |
