@@ -1,3 +1,8 @@
+pub mod physics;
+
+#[cfg(test)]
+mod tests;
+
 pub mod floquet_dielectric;
 pub mod master_equation;
 pub mod phonon_kinetics;
@@ -114,16 +119,27 @@ pub fn run_simulation() -> SimulationSummary {
     let targets = [0.8, 0.9];
     let controls = controller.compute_control(&state, &targets);
 
-    let p_th_ref = 2911.40;
-    let p_teg = 418.43;
-    let p_support = 386.67;
-    let p_net = 31.76;
+    let ledger = physics::power::PowerLedger {
+        p_fusion: 2911.40,
+        p_optical_absorbed: 182.04,
+        eta_teg: 0.3380,
+        p_parasitic_reported: 511.02,
+        p_pump: 27.2432,
+        q_ref: 174.9032,
+        cop_ref: 3.0,
+    };
+    let p_th_ref = ledger.compute_thermal_power();
+    let p_teg = ledger.compute_teg_electrical_power();
+    let p_rejected = ledger.compute_teg_rejection_load();
+    let p_comp = ledger.compute_compressor_duty();
+    let (p_support, p_net) = ledger.compute_complete_net_power();
     let b_lat = lattice_branching_fraction(1.84e22, 1.0e14);
 
     let audit = format!(
-        "{{\n  \"solver\": {{\"spatial_harmonics\": 625, \"temporal_sidebands\": 25, \"system_dimension\": 15625}},\n  \"screening\": {{\"benchmark_ev\": {:.12}, \"scale\": {:.12}, \"effective_ev\": {:.12}, \"residual_ev\": {:.12}}},\n  \"phonon\": {{\"order\": {:.0}, \"gamma_lattice_s^-1\": 1.84e22, \"gamma_gamma_s^-1\": 1.0e14, \"branching_fraction\": {:.12}}},\n  \"convergence\": {{\"residuals\": [1.0e-4, 1.0e-6, 1.0e-8], \"tolerance\": 1.0e-4, \"converged\": true}},\n  \"audit\": {{\"finite_values\": true, \"singularity_warnings\": 0}}\n}}\n",
+        "{{\n  \"solver\": {{\"spatial_harmonics\": 625, \"temporal_sidebands\": 25, \"system_dimension\": 15625}},\n  \"screening\": {{\"benchmark_ev\": {:.12}, \"scale\": {:.12}, \"effective_ev\": {:.12}, \"residual_ev\": {:.12}}},\n  \"phonon\": {{\"order\": {:.0}, \"gamma_lattice_s^-1\": 1.84e22, \"gamma_gamma_s^-1\": 1.0e14, \"branching_fraction\": {:.12}}},\n  \"power_ledger\": {{\"p_thermal_w\": {:.4}, \"p_teg_elec_w\": {:.4}, \"p_parasitic_complete_w\": {:.4}, \"p_net_complete_w\": {:.4}, \"p_pump_w\": 27.2432, \"p_comp_w\": {:.4}, \"p_thermal_rejected_w\": {:.4}}},\n  \"convergence\": {{\"residuals\": [1.0e-4, 1.0e-6, 1.0e-8], \"tolerance\": 1.0e-4, \"converged\": true}},\n  \"audit\": {{\"finite_values\": true, \"singularity_warnings\": 0}}\n}}\n",
         349.50, screening_scale, u_eff, screening_residual,
-        PHONON_ORDER, b_lat
+        PHONON_ORDER, b_lat,
+        p_th_ref, p_teg, p_support, p_net, p_comp, p_rejected
     );
     let _ = std::fs::create_dir_all("sim_outputs");
     let _ = std::fs::write("sim_outputs/simulation_verification.json", audit);

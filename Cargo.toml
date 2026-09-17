@@ -15,6 +15,10 @@ crate-type = ["rlib", "cdylib"]
 name = "shbt_cf"
 path = "src/main.rs"
 
+[dependencies]
+nalgebra = "0.33"
+rug = { workspace = true }
+
 [workspace]
 resolver = "2"
 members = [
