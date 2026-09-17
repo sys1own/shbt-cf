@@ -142,7 +142,19 @@ pub fn run_simulation() -> SimulationSummary {
         p_th_ref, p_teg, p_support, p_net, p_comp, p_rejected
     );
     let _ = std::fs::create_dir_all("sim_outputs");
-    let _ = std::fs::write("sim_outputs/simulation_verification.json", audit);
+    // Atomic publish: concurrent run_simulation callers (e.g. parallel tests)
+    // must never observe a partially written audit file.
+    let audit_path = "sim_outputs/simulation_verification.json";
+    static AUDIT_TMP_SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    let tmp_path = format!(
+        "{}.tmp-{}-{}",
+        audit_path,
+        std::process::id(),
+        AUDIT_TMP_SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+    );
+    if std::fs::write(&tmp_path, audit).is_ok() {
+        let _ = std::fs::rename(&tmp_path, audit_path);
+    }
 
     SimulationSummary {
         eta_spp,
