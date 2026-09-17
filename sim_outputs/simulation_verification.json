@@ -2,6 +2,7 @@
   "solver": {"spatial_harmonics": 625, "temporal_sidebands": 25, "system_dimension": 15625},
   "screening": {"benchmark_ev": 349.500000000000, "scale": 1.001430615165, "effective_ev": 350.000000000000, "residual_ev": 0.000000000000},
   "phonon": {"order": 692000000, "gamma_lattice_s^-1": 1.84e22, "gamma_gamma_s^-1": 1.0e14, "branching_fraction": 0.999999994565},
+  "power_ledger": {"p_thermal_w": 3093.4400, "p_teg_elec_w": 1045.5827, "p_parasitic_complete_w": 538.2632, "p_net_complete_w": 507.3195, "p_pump_w": 27.2432, "p_comp_w": 58.3011, "p_thermal_rejected_w": 2047.8573},
   "convergence": {"residuals": [1.0e-4, 1.0e-6, 1.0e-8], "tolerance": 1.0e-4, "converged": true},
   "audit": {"finite_values": true, "singularity_warnings": 0}
 }

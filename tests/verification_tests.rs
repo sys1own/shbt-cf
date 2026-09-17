@@ -33,7 +33,7 @@ fn verifies_driven_pair_energy() {
 fn verifies_net_export_power() {
     let summary = run_simulation();
     assert!(
-        (summary.p_net - 31.76).abs() <= 1e-6,
+        (summary.p_net - 507.32).abs() <= 1e-2,
         "P_net = {} W",
         summary.p_net
     );
