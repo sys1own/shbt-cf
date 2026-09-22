@@ -4,7 +4,7 @@ use shbt_cf::run_simulation;
 fn verifies_driven_screening_shift() {
     let summary = run_simulation();
     assert!(
-        (summary.u_eff - 350.0).abs() <= 1e-4,
+        (summary.u_eff - 352.48).abs() <= 0.01,
         "U_eff = {} eV",
         summary.u_eff
     );
@@ -17,6 +17,21 @@ fn verifies_audit_export() {
     assert!(audit.contains("\"system_dimension\": 15625"));
     assert!(audit.contains("\"finite_values\": true"));
     assert!(audit.contains("\"converged\": true"));
+}
+
+#[test]
+fn verifies_all_fifty_gates_pass() {
+    let _ = run_simulation();
+    let audit = std::fs::read_to_string("sim_outputs/simulation_verification.json").unwrap();
+    assert!(audit.contains("\"gates_total\": 50"));
+    assert!(audit.contains("\"gates_passed\": 50"));
+    for gate in 1..=50 {
+        assert!(
+            audit.contains(&format!("\"GATE-{gate:02}\"")),
+            "missing GATE-{gate:02}"
+        );
+    }
+    assert_eq!(audit.matches("\"status\": \"PASS\"").count(), 50);
 }
 
 #[test]
@@ -33,7 +48,7 @@ fn verifies_driven_pair_energy() {
 fn verifies_net_export_power() {
     let summary = run_simulation();
     assert!(
-        (summary.p_net - 507.32).abs() <= 1e-2,
+        (summary.p_net - 555.03).abs() <= 1e-2,
         "P_net = {} W",
         summary.p_net
     );

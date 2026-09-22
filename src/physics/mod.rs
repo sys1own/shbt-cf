@@ -1,6 +1,8 @@
 pub mod kinetics;
 pub mod mechanics;
+pub mod optics_healing;
 pub mod power;
 pub mod rcwa;
 pub mod screening;
+pub mod thermal_hydraulics;
 pub mod transport;
