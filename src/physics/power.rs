@@ -47,14 +47,14 @@ impl PowerLedger {
 /// Thin-film MgB2 (T_c = 39.0 K) micro-coil driven at f_rf = 68.5 kHz.
 #[derive(Debug, Clone, Copy)]
 pub struct Mgb2Coil {
-    pub f_rf_hz: f64,   // 68_500 Hz
-    pub l_coil_h: f64,  // 18.4 uH
-    pub i_peak_a: f64,  // 42.5 A
-    pub b_peak_t: f64,  // 1.42 T
-    pub t_c_k: f64,     // 39.0 K
+    pub f_rf_hz: f64,          // 68_500 Hz
+    pub l_coil_h: f64,         // 18.4 uH
+    pub i_peak_a: f64,         // 42.5 A
+    pub b_peak_t: f64,         // 1.42 T
+    pub t_c_k: f64,            // 39.0 K
     pub film_thickness_m: f64, // 2.5 um
-    pub j_c_a_m2: f64,  // 4.2e10 A/m^2 at 30 K
-    pub v_film_m3: f64, // active superconductor volume
+    pub j_c_a_m2: f64,         // 4.2e10 A/m^2 at 30 K
+    pub v_film_m3: f64,        // active superconductor volume
 }
 
 impl Mgb2Coil {
@@ -89,10 +89,10 @@ impl Mgb2Coil {
 /// MOSFETs + SiC Schottky freewheeling diodes returning energy to the 400 V bus).
 #[derive(Debug, Clone, Copy)]
 pub struct SicCrowbar {
-    pub r_ds_on_ohm: f64, // 16 mOhm
-    pub v_bus: f64,       // 400 V
-    pub t_sw_s: f64,      // 11.2 ns switching rise time
-    pub eta_recovery: f64, // 0.9420
+    pub r_ds_on_ohm: f64,   // 16 mOhm
+    pub v_bus: f64,         // 400 V
+    pub t_sw_s: f64,        // 11.2 ns switching rise time
+    pub eta_recovery: f64,  // 0.9420
     pub p_recovered_w: f64, // energy returned to DC bus per second
 }
 
@@ -108,12 +108,12 @@ impl SicCrowbar {
 /// Full RF-drive + balance-of-plant electrical ledger.
 #[derive(Debug, Clone, Copy)]
 pub struct PlantPowerLedger {
-    pub p_teg_w: f64,       // gross TEG electrical output = 1045.58 W
+    pub p_teg_w: f64,         // gross TEG electrical output = 1045.58 W
     pub p_drive_gross_w: f64, // RF drive draw before crowbar recovery = 422.22 W
-    pub p_coil_w: f64,      // MgB2 coil dissipation = 12.35 W
-    pub p_dielectric_w: f64, // dielectric drive losses = 22.33 W
-    pub p_recovered_w: f64, // SiC crowbar energy returned to 400 V bus
-    pub p_aux_w: f64,       // auxiliary plant load = 122.10 W
+    pub p_coil_w: f64,        // MgB2 coil dissipation = 12.35 W
+    pub p_dielectric_w: f64,  // dielectric drive losses = 22.33 W
+    pub p_recovered_w: f64,   // SiC crowbar energy returned to 400 V bus
+    pub p_aux_w: f64,         // auxiliary plant load = 122.10 W
 }
 
 impl PlantPowerLedger {

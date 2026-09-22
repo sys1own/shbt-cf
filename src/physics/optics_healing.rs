@@ -10,12 +10,12 @@
 /// GST layer physical parameters.
 #[derive(Debug, Clone, Copy)]
 pub struct GstLayer {
-    pub thickness_m: f64,   // 45 nm
-    pub rho_kg_m3: f64,     // 6150 kg/m^3
-    pub tm_k: f64,          // 889.15 K melting point
-    pub t0_k: f64,          // ambient before pulse
-    pub cp_am_j_kgk: f64,   // amorphous-phase heat capacity
-    pub dh_fus_j_kg: f64,   // 130 J/g latent heat of fusion
+    pub thickness_m: f64, // 45 nm
+    pub rho_kg_m3: f64,   // 6150 kg/m^3
+    pub tm_k: f64,        // 889.15 K melting point
+    pub t0_k: f64,        // ambient before pulse
+    pub cp_am_j_kgk: f64, // amorphous-phase heat capacity
+    pub dh_fus_j_kg: f64, // 130 J/g latent heat of fusion
 }
 
 impl Default for GstLayer {
@@ -59,9 +59,9 @@ impl Default for HealingPulse {
 /// Optical state of the Pd-Ir/GST stack before and after a healing cycle.
 #[derive(Debug, Clone, Copy)]
 pub struct HealingResult {
-    pub ra_nm: f64,          // post-healing mean surface roughness = 0.62 nm
-    pub absorption: f64,     // A = 98.74 %
-    pub reflectivity: f64,   // R_grating = 99.94 %
+    pub ra_nm: f64,           // post-healing mean surface roughness = 0.62 nm
+    pub absorption: f64,      // A = 98.74 %
+    pub reflectivity: f64,    // R_grating = 99.94 %
     pub service_life_yr: f64, // >= 30 years
 }
 
