@@ -14,10 +14,14 @@ pub struct TransportParams {
 impl Default for TransportParams {
     fn default() -> Self {
         Self {
-            d_0: 2.0e-7,
-            e_l: 13500.0,
-            v_h_star: 1.7e-6,
-            q_star: -12000.0,
+            // Active alloy Pd0.9132Ir0.0868D_x at x = 0.9132 (cf3 spec §1.2):
+            // D0 = 2.85e-7 m^2/s, Ea = 0.224 eV (21.61 kJ/mol), Q* = +0.048 eV
+            // (4.63 kJ/mol, positive => Soret drift toward cold interfaces),
+            // V_H* = 1.70e-6 m^3/mol.
+            d_0: 2.85e-7,
+            e_l: 21_612.7,
+            v_h_star: 1.70e-6,
+            q_star: 4_631.3,
             k_s_0: 0.125,
             delta_h_s: 28600.0,
             rho_m: 1.34e5,
@@ -89,17 +93,22 @@ impl MicroTransportSolver {
 
         Self {
             params: TransportParams::default(),
+            // Two-family McNabb-Foster traps (cf3 spec §1.2).
+            // Family 1 (dislocations): N1 = 1.50e24 sites/m^3 = 2.4908 mol/m^3,
+            // E_t1 = 0.23 eV (22.19 kJ/mol).
             trap_1: TrapFamily {
-                density: 50.0,
-                binding_energy: 20000.0,
+                density: 2.4908,
+                binding_energy: 22_191.6,
                 k_c0: 1.0e-5,
                 p_r0: 1.0e4,
             },
+            // Family 2 (grain boundaries): N2 = 5.00e23 sites/m^3 = 0.8303
+            // mol/m^3, E_t2 = 0.15 eV (14.47 kJ/mol); reversible release.
             trap_2: TrapFamily {
-                density: 15.0,
-                binding_energy: 55000.0,
+                density: 0.8303,
+                binding_energy: 14_472.8,
                 k_c0: 1.0e-5,
-                p_r0: 0.0, // Irreversible trapping
+                p_r0: 1.0e3,
             },
             mesh,
             state: initial_state.clone(),
@@ -154,9 +163,11 @@ impl MicroTransportSolver {
                 let trap_1_rate = k_c1 * cell_state.c_l * (self.trap_1.density - cell_state.c_t1)
                     - p_r1 * cell_state.c_t1;
 
-                // Trap 2 Rate (Irreversible)
+                // Trap 2 Rate (reversible per two-family McNabb-Foster model)
                 let k_c2 = self.trap_2.k_c0 * (-self.trap_2.binding_energy / (r_gas * temp)).exp();
-                let trap_2_rate = k_c2 * cell_state.c_l * (self.trap_2.density - cell_state.c_t2);
+                let p_r2 = self.trap_2.p_r0 * (-self.trap_2.binding_energy / (r_gas * temp)).exp();
+                let trap_2_rate = k_c2 * cell_state.c_l * (self.trap_2.density - cell_state.c_t2)
+                    - p_r2 * cell_state.c_t2;
 
                 let eq_l = i * 3;
                 let eq_t1 = i * 3 + 1;
@@ -172,13 +183,14 @@ impl MicroTransportSolver {
                         * (k_c1 * (self.trap_1.density - cell_state.c_t1)
                             + k_c2 * (self.trap_2.density - cell_state.c_t2));
                 jacobian[eq_l][eq_t1] = -self.dt * (k_c1 * cell_state.c_l + p_r1);
-                jacobian[eq_l][eq_t2] = -self.dt * k_c2 * cell_state.c_l;
+                jacobian[eq_l][eq_t2] = -self.dt * (k_c2 * cell_state.c_l + p_r2);
 
                 jacobian[eq_t1][eq_l] = -self.dt * k_c1 * (self.trap_1.density - cell_state.c_t1);
                 jacobian[eq_t1][eq_t1] = 1.0 + self.dt * (k_c1 * cell_state.c_l + p_r1);
 
                 jacobian[eq_t2][eq_l] = -self.dt * k_c2 * (self.trap_2.density - cell_state.c_t2);
-                jacobian[eq_t2][eq_t2] = 1.0 + self.dt * k_c2 * cell_state.c_l;
+                jacobian[eq_t2][eq_t2] =
+                    1.0 + self.dt * (k_c2 * cell_state.c_l + p_r2);
 
                 if i > 0 {
                     let flux = self.compute_intercell_flux(i - 1, i);
@@ -221,7 +233,9 @@ impl MicroTransportSolver {
 
         for i in 0..num_cells {
             let x = self.compute_loading_ratio(&self.state[i]);
-            if x > 0.904 {
+            // Structural rupture cap: x_max = 0.9450 (operating point
+            // x0 = 0.9132 for the Pd0.9132Ir0.0868D_x active layer).
+            if x > 0.9450 {
                 return Err(format!(
                     "Atomic loading ratio exceeds physical limit: x = {:.4}",
                     x
@@ -246,7 +260,7 @@ impl MicroTransportSolver {
         let d_temp = (right.temperature - left.temperature) / self.mesh.dx;
 
         let v_drift = (d_face * self.params.v_h_star / (self.params.r_gas * t_face)) * d_sigma
-            - (d_face * self.params.q_star / (self.params.r_gas * t_face * t_face)) * d_temp;
+            + (d_face * self.params.q_star / (self.params.r_gas * t_face * t_face)) * d_temp;
 
         let c_up = if v_drift >= 0.0 { left.c_l } else { right.c_l };
         let diffusive_flux = -d_face * (right.c_l - left.c_l) / self.mesh.dx;
@@ -273,7 +287,7 @@ impl MicroTransportSolver {
         let d_temp = (right.temperature - left.temperature) / self.mesh.dx;
 
         let v_drift = (d_face * self.params.v_h_star / (self.params.r_gas * t_face)) * d_sigma
-            - (d_face * self.params.q_star / (self.params.r_gas * t_face * t_face)) * d_temp;
+            + (d_face * self.params.q_star / (self.params.r_gas * t_face * t_face)) * d_temp;
 
         let mut deriv = if eval_right {
             -d_face / self.mesh.dx

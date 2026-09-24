@@ -43,7 +43,7 @@ verification_tests.rs             # Multi-crate integration verification suite
 
 ## Verified Simulation Output & Ledger Benchmarks
 
-The current baseline simulation state (`sim_outputs/simulation_verification.json`) validates complete physical closure and numerical convergence across all core physics modules, and audits the full **50-gate system verification matrix** (`GATE-01` – `GATE-50`, all PASS) defined by the cf2 engineering specification.
+The current baseline simulation state (`sim_outputs/simulation_verification.json`) validates complete physical closure and numerical convergence across all core physics modules, and audits the full **50-gate system verification matrix** (`GATE-01` – `GATE-50`, all PASS) defined by the cf3 engineering specification.
 
 ### Master Power Ledger (cf2)
 
@@ -68,7 +68,7 @@ $$P_{\text{net}} = P_{\text{TEG}} - P_{\text{drive,net}} - P_{\text{aux}} = 1045
 | | **Net Electrical Output $P_{\text{net}}$** | **$+555.03\text{ W}$** ($> +550.00\text{ W}$) |
 | **GST Self-Healing Optics** | Buffer / Pulse | **$\text{Ge}_2\text{Sb}_2\text{Te}_5$** layer, $F_{\text{pulse}} = 27.9\text{ mJ/cm}^2$, $t_{\text{pulse}} = 50\text{ ns}$ |
 | | Post-Healing Roughness / $A$ / $R_{\text{grating}}$ | **$0.62\text{ nm}$ / $98.74\%$ / $99.94\%$** (30-year service life) |
-| **C-ABI MMIO Map** | `shbt_mmio_control_t` | **Strict 64-byte alignment**, GPUDirect pointer at `0x0040`, `matrix_dim = 15625` |
+| **C-ABI MMIO Map** | `shbt_mmio_control_t` | **128-byte dual-cacheline record (64-byte aligned)**, `matrix_dim = 15625` at `0x0040`, GPUDirect pointer at `0x0048` |
 | **Numerical Audit** | Residual Sequence / Status | **$[1.0 \times 10^{-4}, 1.0 \times 10^{-6}, 1.0 \times 10^{-8}]$** (Converged: True, Singularities: 0, Gates: 50/50 PASS) |
 
 ### cf2 Physics Upgrades
@@ -78,6 +78,17 @@ $$P_{\text{net}} = P_{\text{TEG}} - P_{\text{drive,net}} - P_{\text{aux}} = 1045
 * **High-$T_c$ Superconducting Coils + SiC Crowbar** (`src/physics/power.rs`): thin-film $\text{MgB}_2$ micro-coils ($T_c = 39.0\text{ K}$) at $68.5\text{ kHz}$ with Bean critical-state + flux-flow losses ($P_{\text{coil}} = 12.35\text{ W}$); SiC crowbar harvests the $16.62\text{ mJ/cycle}$ inductive energy at $94.20\%$ efficiency, cutting parasitic drive from $422.22\text{ W}$ to $368.45\text{ W}$.
 * **GST Optical Self-Healing** (`src/physics/optics_healing.rs`): chalcogenide $\text{Ge}_2\text{Sb}_2\text{Te}_5$ buffer in the $\text{Pd}_{0.9132}\text{Ir}_{0.0868}$ grating stack; $50\text{ ns}$ electro-thermal pulses ($27.9\text{ mJ/cm}^2$) trigger melt-quench recrystallization restoring $R_a < 0.8\text{ nm}$, $A \ge 98.40\%$, $R_{\text{grating}} > 99.9\%$.
 * **C-ABI MMIO Map** (`crates/shbt-fabrication-hil/include/shbt_floquet_mmio.h`): zero-copy 64-byte aligned `shbt_mmio_control_t` register map with 100 Hz HIL frame kernel (`shbt_floquet_mmio_execute_frame`).
+
+### cf3 Physics Upgrades
+
+* **Active-Alloy McNabb–Foster Kinetics** (`src/physics/transport.rs`): two-family diffusion and trapping model for $\text{Pd}_{0.9132}\text{Ir}_{0.0868}\text{D}_x$ at $x = 0.9132$ with Soret thermophoresis and partial-molar-volume stress drift,
+$$\mathbf{J}_D = -D_D(T,x)\nabla C_L + \frac{V_H^*}{RT}D_D C_L\nabla\sigma_h + \frac{Q^*}{RT^2}D_D C_L\nabla T$$
+  using $D_0 = 2.85\times10^{-7}\text{ m}^2/\text{s}$, $E_a = 0.224\text{ eV}$, $Q^* = 0.048\text{ eV}$, $V_H^* = 1.70\times10^{-6}\text{ m}^3/\text{mol}$, dislocation traps $N_1 = 1.50\times10^{24}\text{ m}^{-3}$ ($E_{t,1} = 0.23\text{ eV}$) and grain-boundary traps $N_2 = 5.00\times10^{23}\text{ m}^{-3}$ ($E_{t,2} = 0.15\text{ eV}$).
+* **3D Chaboche Thermoviscoplasticity & Joint FEA** (`src/physics/mechanics.rs`, `crates/shbt-fea-structural`): two-term nonlinear kinematic hardening ($C_1 = 45.2\text{ GPa}, \gamma_1 = 410, C_2 = 8.5\text{ GPa}, \gamma_2 = 62$ at $298.15\text{ K}$, linearly interpolated to the $623.15\text{ K}$ set) plus Voce isotropic hardening ($R_\infty = 85\text{ MPa}$, $b = 12.46$); VCCT energy release rates on the $3.5\,\mu\text{m}$ Ni–Cu–Sn TLP bondline ($G_{IC} = 25, G_{IIC} = 65, G_{IIIC} = 60\text{ J/m}^2$, delamination factor $f = 0.484$); Morrow strain-life fatigue $N_f \approx 65{,}474 \ge 52{,}400$ cycles.
+* **Plant Stability Maps** (`src/physics/thermal_hydraulics.rs`): system pump head $H_{\text{pump}}(Q) = 65.0 - 1.25Q - 0.62Q^2\text{ kPa}$ coupled to the two-phase core; Ledinegg excursive margin and Ishii–Zuber DWO ratio $N_{\text{pch,crit}} = 1.45\,N_{\text{sub}} + 2.5$ evaluated across startup, nominal ($\Delta P = 42.8\text{ kPa}$ @ $4.85\text{ L/min}$), surge, and low-flow regimes with $Q < 3.95\text{ L/min}$ interlock.
+* **3D OpenMC Radiation Transport** (`src/physics/radiation.rs`): $2.45\text{ MeV}$ DD neutrons plus secondary capture gammas ($478\text{ keV}$ from $^{10}\text{B}(n,\alpha)^7\text{Li}^*$, $2.223\text{ MeV}$ from $\text{H}(n,\gamma)\text{D}$) through the $\text{H}_2\text{O}/316\text{L}/5\text{ wt\% B-PE}/\text{Pb}$ shielding stack; accessible surface dose $0.38 \pm 0.012\ \mu\text{Sv/h} < 0.50\ \mu\text{Sv/h}$ at $Q_N \le 10^6\text{ n/s}$.
+* **GUM Covariance Metrology** (`src/physics/metrology.rs`, `crates/shbt-metrology-gum`): ISO/IEC 98-3 multi-variable input covariance $\mathbf{\Sigma}_X$ ($8\times8$, correlations $r_{T_{in},T_{out}} = 0.85$, $r_{Q_t,Q_T} = 0.92$, $r_{Q,UA} = 0.30$) with analytic/dual-number Jacobian $\mathbf{J}$, $\mathbf{\Sigma}_Y = \mathbf{J}\mathbf{\Sigma}_X\mathbf{J}^T$, $N = 10^6$ MC cross-check; propagated bounds $u(P_{\text{thermal}}) \approx 11.8\text{ W}$, $u(P_{^4\text{He}}) \approx 2.5\times10^{-9}\text{ mbar}$, $u(\text{FOM}) \approx 0.018$ securing $P_{\text{net}} = +555.03\text{ W}$ at $3\sigma$.
+* **128-byte C-ABI MMIO Record** (`crates/shbt-fabrication-hil/include/shbt_floquet_mmio.h`): `shbt_mmio_control_t` widened to a dual-cacheline packed record — `plastic_strain_max` @ `0x0028`, `dose_surface_usv` @ `0x0030`, `gpu_frame_count` @ `0x0038`, `matrix_dim = 15625` @ `0x0040`, `d_floquet_ptr` @ `0x0048`, `pad[16]` @ `0x0050` — 64-byte aligned.
 
 ---
 

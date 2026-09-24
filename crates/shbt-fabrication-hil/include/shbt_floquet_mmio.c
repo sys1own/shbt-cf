@@ -21,7 +21,7 @@ int shbt_floquet_mmio_execute_frame(shbt_mmio_control_t* mmio, complex64_t* h_ma
     double x_loading = mmio->x_deuterium_avg;
 
     /* Validate physical operating bounds */
-    if (p_thermal > 3500.0 || x_loading < 0.850) {
+    if (p_thermal > 3500.0 || x_loading < 0.850 || mmio->dose_surface_usv > 0.50) {
         mmio->ctrl_status |= (1u << 2); /* Raise hardware safety fault */
         return -3; /* Boundary threshold breach */
     }

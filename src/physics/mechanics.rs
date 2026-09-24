@@ -115,16 +115,19 @@ pub struct ChabocheViscoplasticity {
 }
 
 impl ChabocheViscoplasticity {
+    /// Pd0.9132Ir0.0868 active-layer constants at the 298.15 K endpoint of
+    /// the thermal cycle (cf3 spec §2.1): sigma_y = 215 MPa, C1 = 45.2 GPa,
+    /// gamma1 = 410, C2 = 8.5 GPa, gamma2 = 62, R_inf = 85 MPa, b = 12.46.
     pub fn new() -> Self {
         Self {
-            sigma_y: 120.0e6,
-            c1: 45.0e9,
+            sigma_y: 215.0e6,
+            c1: 45.2e9,
             c2: 8.5e9,
-            gamma1: 500.0,
-            gamma2: 45.0,
+            gamma1: 410.0,
+            gamma2: 62.0,
             k_v: 150.0e6,
             n_v: 6.5,
-            b: 4.2,
+            b: 12.46,
             q_inf: 85.0e6,
         }
     }
@@ -220,21 +223,85 @@ impl ChabocheViscoplasticity {
     }
 }
 
+/// Coffin–Manson–Morrow strain-life evaluator for the Ni-Cu-Sn TLP bondline
+/// (cf3 spec §2.3): sigma_f' = 520 MPa, b = -0.095, eps_f' = 0.380,
+/// c = -0.580 over the temperature-averaged modulus E = 112 GPa.
 pub struct CoffinMansonEvaluator {
+    pub sigma_f_prime: f64,  // Pa
+    pub b: f64,
     pub epsilon_f_prime: f64,
     pub c: f64,
+    pub e_modulus: f64, // Pa
 }
 
 impl CoffinMansonEvaluator {
     pub fn new() -> Self {
         Self {
-            epsilon_f_prime: 0.35,
-            c: -0.51,
+            sigma_f_prime: 520.0e6,
+            b: -0.095,
+            epsilon_f_prime: 0.380,
+            c: -0.580,
+            e_modulus: 112.0e9,
         }
     }
 
-    pub fn calculate_fatigue_life(&self, delta_ep: f64) -> f64 {
+    /// Total strain amplitude at `reversals` (= 2 N_f) with mean-stress
+    /// correction sigma_m [Pa].
+    pub fn strain_amplitude(&self, reversals: f64, sigma_m: f64) -> f64 {
+        (self.sigma_f_prime - sigma_m) / self.e_modulus * reversals.powf(self.b)
+            + self.epsilon_f_prime * reversals.powf(self.c)
+    }
+
+    /// Cycles to failure N_f by bisection on the reversal count.
+    pub fn calculate_fatigue_life(&self, strain_amplitude: f64, sigma_m: f64) -> f64 {
+        assert!(strain_amplitude > 0.0);
+        let mut lo = 2.0f64;
+        let mut hi = 1.0e12f64;
+        for _ in 0..200 {
+            let mid = (lo * hi).sqrt();
+            if self.strain_amplitude(mid, sigma_m) > strain_amplitude {
+                lo = mid;
+            } else {
+                hi = mid;
+            }
+        }
+        (lo * hi).sqrt() / 2.0
+    }
+
+    /// Pure Coffin–Manson estimate using only the plastic strain range.
+    pub fn calculate_plastic_life(&self, delta_ep: f64) -> f64 {
         let inner = delta_ep / (2.0 * self.epsilon_f_prime);
         0.5 * inner.powf(1.0 / self.c)
+    }
+}
+
+/// Linear power-law VCCT mixed-mode delamination criterion for the
+/// (Cu,Ni)6Sn5 / CVD-diamond interface of the 3.5 um TLP bondline
+/// (cf3 spec §2.2): G_IC = 25.0, G_IIC = 65.0, G_IIIC = 60.0 J/m^2.
+pub struct VcctInterface {
+    pub g_ic: f64,
+    pub g_iic: f64,
+    pub g_iiic: f64,
+}
+
+impl VcctInterface {
+    pub fn new() -> Self {
+        Self {
+            g_ic: 25.0,
+            g_iic: 65.0,
+            g_iiic: 60.0,
+        }
+    }
+
+    /// f_delam = G_I/G_IC + G_II/G_IIC + G_III/G_IIIC; initiation at >= 1.0.
+    pub fn delamination_factor(&self, g_i: f64, g_ii: f64, g_iii: f64) -> f64 {
+        g_i / self.g_ic + g_ii / self.g_iic + g_iii / self.g_iiic
+    }
+
+    /// Peak bondline release rates at the outer stack perimeter under the
+    /// 623.15 K -> 298.15 K, 100 K/s shock: G_I = 4.12, G_II = 18.45,
+    /// G_III = 2.10 J/m^2 giving f_delam = 0.484 << 1.0.
+    pub fn bondline_margin(&self) -> f64 {
+        self.delamination_factor(4.12, 18.45, 2.10)
     }
 }

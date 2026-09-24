@@ -98,10 +98,11 @@ impl McNabbFosterSolver {
     }
 }
 
-/// Maximum physical atomic loading ratio `x_max` (D/Pd) before rupture.
-pub const D_PD_MAX_PHYSICAL_LOADING_CAP: f64 = 0.904;
-/// Practical operational loading cap applied in simulation.
-pub const D_PD_SIMULATION_UPPER_BOUND: f64 = 0.81;
+/// Maximum physical atomic loading ratio `x_max` (D/M) before rupture of the
+/// Pd0.9132Ir0.0868D_x active layer (cf3 spec §1).
+pub const D_PD_MAX_PHYSICAL_LOADING_CAP: f64 = 0.9450;
+/// Nominal operational loading of the active alloy, `x0 = 0.9132`.
+pub const D_PD_SIMULATION_UPPER_BOUND: f64 = 0.9132;
 /// Hydrostatic yield strength at 623.15 K [MPa]; exceeding `x_max` requires
 /// stress beyond this limit.
 pub const SIGMA_Y_HT_MPA: f64 = 155.0;
@@ -119,18 +120,18 @@ pub fn compute_soret_flux(c_l: f64, grad_c: f64, grad_sigma_h: f64, temp: f64, d
 
 /// Enforces the physical loading cap on the atomic ratio D/Pd.
 ///
-/// Above `x_max = 0.904` the required hydrostatic stress exceeds the 155 MPa
+/// Above `x_max = 0.9450` the required hydrostatic stress exceeds the 155 MPa
 /// high-temperature yield strength, so reaching it mechanically is
 /// impossible; this is a hard assertion. Ratios at or below `x_max` are
-/// clamped to the operational bound `0.81`.
+/// clamped to the nominal operational loading `0.9132`.
 ///
 /// # Panics
-/// If `loading_ratio > 0.904` while `sigma_h <= 155.0` MPa.
+/// If `loading_ratio > 0.9450` while `sigma_h <= 155.0` MPa.
 pub fn enforce_loading_cap(loading_ratio: f64, sigma_h: f64) -> f64 {
     if loading_ratio > D_PD_MAX_PHYSICAL_LOADING_CAP {
         assert!(
             sigma_h > SIGMA_Y_HT_MPA,
-            "Loading ratio > 0.904 requires stress exceeding yield strength (155 MPa)"
+            "Loading ratio > 0.9450 requires stress exceeding yield strength (155 MPa)"
         );
         return D_PD_MAX_PHYSICAL_LOADING_CAP;
     }
@@ -161,18 +162,18 @@ mod tests {
 
     #[test]
     fn loading_cap_clamps_to_operational_bound() {
-        assert_eq!(enforce_loading_cap(0.9, 100.0), 0.81);
+        assert_eq!(enforce_loading_cap(0.92, 100.0), 0.9132);
         assert_eq!(enforce_loading_cap(0.5, 100.0), 0.5);
     }
 
     #[test]
     fn loading_cap_above_max_clamps_when_stress_exceeds_yield() {
-        assert_eq!(enforce_loading_cap(0.95, 1718.36), 0.904);
+        assert_eq!(enforce_loading_cap(0.96, 1718.36), 0.9450);
     }
 
     #[test]
     #[should_panic(expected = "requires stress exceeding yield strength")]
     fn loading_cap_above_max_panics_below_yield_stress() {
-        let _ = enforce_loading_cap(0.95, 100.0);
+        let _ = enforce_loading_cap(0.96, 100.0);
     }
 }

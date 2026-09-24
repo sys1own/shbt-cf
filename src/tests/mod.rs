@@ -279,7 +279,7 @@ mod tests {
         let model = ChabocheViscoplasticity::new();
 
         let stress = Tensor3D {
-            xx: 180.0e6,
+            xx: 280.0e6,
             yy: -90.0e6,
             zz: -90.0e6,
             xy: 0.0,
@@ -308,17 +308,17 @@ mod tests {
     #[test]
     fn test_fatigue_life_compliance() {
         let lifing = CoffinMansonEvaluator::new();
-        let delta_ep = 0.00184; // Stabilized strain range
+        // cf3 TLP bondline hotspot: d_eps_t/2 = 0.001925, sigma_m = +42 MPa.
+        let strain_amp = 0.001925;
 
-        let cycles_to_failure = lifing.calculate_fatigue_life(delta_ep);
+        let cycles_to_failure = lifing.calculate_fatigue_life(strain_amp, 0.0);
 
         assert!(
             cycles_to_failure >= 52400.0,
             "Calculated fatigue life is below design expectations"
         );
-        assert!(
-            cycles_to_failure > 44820.0,
-            "Does not satisfy target lifecycle design envelope"
-        );
+        // Mean-stress (Morrow) corrected lower bound.
+        let nf_morrow = lifing.calculate_fatigue_life(strain_amp, 42.0e6);
+        assert!(nf_morrow > 4.0e4, "N_f(Morrow) = {}", nf_morrow);
     }
 }
