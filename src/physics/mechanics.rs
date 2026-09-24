@@ -227,7 +227,7 @@ impl ChabocheViscoplasticity {
 /// (cf3 spec §2.3): sigma_f' = 520 MPa, b = -0.095, eps_f' = 0.380,
 /// c = -0.580 over the temperature-averaged modulus E = 112 GPa.
 pub struct CoffinMansonEvaluator {
-    pub sigma_f_prime: f64,  // Pa
+    pub sigma_f_prime: f64, // Pa
     pub b: f64,
     pub epsilon_f_prime: f64,
     pub c: f64,

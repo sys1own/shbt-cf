@@ -10,8 +10,8 @@
 //! and output vector
 //! `Y = [P_thermal (W), P_4He (mbar), PSD_FOM]`.
 
-use crate::dual::{propagate_uncertainty_gum, DualNum, GumReport};
 use crate::distributions::{Input, Sampler};
+use crate::dual::{propagate_uncertainty_gum, DualNum, GumReport};
 
 /// Number of metrology inputs.
 pub const DIM_X: usize = 8;
@@ -49,14 +49,14 @@ pub const INPUT_MEANS: [f64; DIM_X] = [
 /// uncertainties land on the cf3 targets `u(P_th) ≈ 11.82 W`,
 /// `u(P_4He) ≈ 2.52e-9 mbar`, `u(FOM) ≈ 0.018`.
 pub const INPUT_STD: [f64; DIM_X] = [
-    0.0185,   // Q
-    0.10,     // T_in
-    0.10,     // T_out
-    0.60,     // UA_loss
-    1.9e-12,  // I_4He
-    5.0e-6,   // S_4He
-    0.16,     // Q_tail
-    0.30,     // Q_total
+    0.0185,  // Q
+    0.10,    // T_in
+    0.10,    // T_out
+    0.60,    // UA_loss
+    1.9e-12, // I_4He
+    5.0e-6,  // S_4He
+    0.16,    // Q_tail
+    0.30,    // Q_total
 ];
 
 /// Liquid water density at the secondary-loop mean temperature [kg/m^3].
@@ -95,9 +95,7 @@ fn measurand(x: &[DualNum]) -> Vec<DualNum> {
     // Differential calorimetry: P_th = η_cal ρ Q Cp (T_out − T_in).
     let q_m3_s = x[0].clone() * DualNum::constant(1e-3 / 60.0, DIM_X);
     let delta_t = x[2].clone() - x[1].clone();
-    let p_thermal = q_m3_s
-        * DualNum::constant(RHO_SEC * CP_SEC * ETA_CAL, DIM_X)
-        * delta_t;
+    let p_thermal = q_m3_s * DualNum::constant(RHO_SEC * CP_SEC * ETA_CAL, DIM_X) * delta_t;
 
     // QMS isotopic tracking: P_4He = I_4He / S_4He.
     let p_4he = x[4].clone() / x[5].clone();

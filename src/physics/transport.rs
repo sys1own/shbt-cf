@@ -189,8 +189,7 @@ impl MicroTransportSolver {
                 jacobian[eq_t1][eq_t1] = 1.0 + self.dt * (k_c1 * cell_state.c_l + p_r1);
 
                 jacobian[eq_t2][eq_l] = -self.dt * k_c2 * (self.trap_2.density - cell_state.c_t2);
-                jacobian[eq_t2][eq_t2] =
-                    1.0 + self.dt * (k_c2 * cell_state.c_l + p_r2);
+                jacobian[eq_t2][eq_t2] = 1.0 + self.dt * (k_c2 * cell_state.c_l + p_r2);
 
                 if i > 0 {
                     let flux = self.compute_intercell_flux(i - 1, i);

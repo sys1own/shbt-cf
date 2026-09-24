@@ -84,8 +84,7 @@ pub fn gp_buildup(x_mfp: f64, b1: f64, c: f64, a: f64, d: f64, x_k: f64) -> f64 
         return 1.0;
     }
     let tanh_neg2 = (-2.0f64).tanh();
-    let k = c * x_mfp.powf(a)
-        + d * ((x_mfp / x_k - 2.0).tanh() - tanh_neg2) / (1.0 - tanh_neg2);
+    let k = c * x_mfp.powf(a) + d * ((x_mfp / x_k - 2.0).tanh() - tanh_neg2) / (1.0 - tanh_neg2);
     if (k - 1.0).abs() < 1e-9 {
         return b1;
     }
@@ -117,7 +116,7 @@ pub fn surface_dose_audit(q_n: f64) -> SurfaceDoseAudit {
         .product();
     let scale = q_n / Q_N_BOUND_S;
     let dose = 0.38 * scale + ACTIVATION_CONTACT_USV_H * 0.0; // activation is
-    // reported separately on the contact face, not on the accessible surface.
+                                                              // reported separately on the contact face, not on the accessible surface.
     SurfaceDoseAudit {
         dose_rate_usv_h: dose,
         dose_std_usv_h: 0.012 * scale,
