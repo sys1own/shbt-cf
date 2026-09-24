@@ -357,16 +357,17 @@ impl McNabbFosterSolver {
     ) -> Result<f64, String> {
         let x_loading = (c_l + c_t1 + c_t2) / metal_density;
 
-        if x_loading > 0.904 {
+        if x_loading > 0.9450 {
             return Err(format!(
-                "Unstable thermodynamic phase: x_loading = {} exceeds x_max = 0.904",
+                "Unstable thermodynamic phase: x_loading = {} exceeds x_max = 0.9450",
                 x_loading
             ));
         }
-        if x_loading > 0.81 {
-            // Trigger operational soft-clamp warning
+        if x_loading > 0.9132 {
+            // Operational soft-clamp warning above the nominal active-alloy
+            // loading x0 = 0.9132 (cf3 spec §1.1).
             println!(
-                "Warning: x_loading = {} exceeds operational limit of 0.81",
+                "Warning: x_loading = {} exceeds operational limit of 0.9132",
                 x_loading
             );
         }

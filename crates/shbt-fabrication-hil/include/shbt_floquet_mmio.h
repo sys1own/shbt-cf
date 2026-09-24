@@ -19,19 +19,23 @@ typedef struct __attribute__((aligned(64))) {
     double imag;
 } complex64_t;
 
-/* Zero-copy C-ABI hardware MMIO control map. Binary layout is fixed across
- * host C11 drivers, Rust orchestration wrappers, and CUDA/ROCm kernels. */
+/* Zero-copy C-ABI hardware MMIO control map, widened to a 128-byte dual
+ * cacheline record (cf3 spec §6). Binary layout is fixed across host C11
+ * drivers, Rust orchestration wrappers, and CUDA/ROCm kernels. */
 typedef struct __attribute__((packed, aligned(64))) {
-    volatile uint32_t ctrl_status;      /* 0x0000: Bit0=Run/Ready, Bit1=Reset, Bit2=Error */
+    volatile uint32_t ctrl_status;        /* 0x0000: Control/Status Bits */
     uint32_t          reserved0;
-    volatile double   thermal_surge_w;  /* 0x0008: Thermal load input P_thermal (W) */
-    volatile double   x_deuterium_avg;  /* 0x0010: Deuterium loading x(r,t) */
-    volatile double   u_screen_eff_ev;  /* 0x0018: Computed screening energy U_eff (eV) */
-    volatile double   b_lat_fraction;   /* 0x0020: Computed branching fraction B_lat */
-    volatile uint64_t gpu_frame_count;  /* 0x0028: Synchronized HIL frame index */
-    uint32_t          matrix_dim;       /* 0x0030: Standard dimension = 15625 */
+    volatile double   thermal_surge_w;    /* 0x0008: Inputs P_thermal (W) */
+    volatile double   x_deuterium_avg;    /* 0x0010: Deuterium loading x(r,t) */
+    volatile double   u_screen_eff_ev;    /* 0x0018: Screening potential U_eff (eV) */
+    volatile double   b_lat_fraction;     /* 0x0020: Branching fraction B_lat */
+    volatile double   plastic_strain_max; /* 0x0028: Peak Chaboche plastic strain */
+    volatile double   dose_surface_usv;   /* 0x0030: OpenMC surface dose rate (uSv/h) */
+    volatile uint64_t gpu_frame_count;    /* 0x0038: HIL frame counter */
+    uint32_t          matrix_dim;         /* 0x0040: Dimension = 15625 */
     uint32_t          reserved1;
-    volatile uint64_t d_floquet_ptr;    /* 0x0040: GPUDirect RDMA device pointer */
+    volatile uint64_t d_floquet_ptr;      /* 0x0048: GPUDirect device pointer */
+    uint8_t           pad[16];            /* 0x0050: Pad to 128-byte dual cacheline */
 } shbt_mmio_control_t;
 
 /*

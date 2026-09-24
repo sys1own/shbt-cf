@@ -16,6 +16,7 @@
 pub mod distributions;
 pub mod dual;
 pub mod engine;
+pub mod metrology;
 pub mod random;
 
 pub use distributions::{Input, Marginal, Sampler};

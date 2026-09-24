@@ -107,6 +107,131 @@ pub fn lockhart_martinelli_phi2_lo(x_tt: f64) -> f64 {
     1.0 + 20.0 / x_tt + 1.0 / (x_tt * x_tt)
 }
 
+// ---------------------------------------------------------------------------
+// Plant-level closed-loop dynamics (cf3 spec): pump head curve, core
+// differential pressure, Ledinegg excursive stability and Ishii-Zuber DWO
+// stability-plane coordinates.
+// ---------------------------------------------------------------------------
+
+/// Pump shut-off head H0 [kPa].
+pub const PUMP_H0_KPA: f64 = 65.0;
+/// Pump curve linear coefficient C_p1 [kPa·min/L].
+pub const PUMP_C1: f64 = 1.25;
+/// Pump curve quadratic coefficient C_p2 [kPa·(min/L)^2].
+pub const PUMP_C2: f64 = 0.62;
+
+/// Pump head characteristic `H_pump(Q) = H0 - C_p1 Q - C_p2 Q^2` [kPa], with
+/// `Q` in L/min.
+pub fn pump_head_kpa(q_l_min: f64) -> f64 {
+    PUMP_H0_KPA - PUMP_C1 * q_l_min - PUMP_C2 * q_l_min * q_l_min
+}
+
+/// Pump delivery-curve slope `dH_pump/dQ` [kPa·min/L]; always negative.
+pub fn pump_dp_slope(q_l_min: f64) -> f64 {
+    -PUMP_C1 - 2.0 * PUMP_C2 * q_l_min
+}
+
+/// Ishii-Zuber subcooling number
+/// `N_sub = Cp_l (T_sat - T_cold)/h_fg * (rho_l - rho_v)/rho_v`.
+pub fn subcooling_number(t_cold_k: f64) -> f64 {
+    CP_L * (T_SAT_K - t_cold_k) / H_FG * (RHO_L - RHO_V) / RHO_V
+}
+
+/// Ishii-Zuber phase-change number
+/// `N_pch = P_thermal/(rho_l Q h_fg) * (rho_l - rho_v)/rho_v`,
+/// `q_l_min` in L/min.
+pub fn phase_change_number(p_thermal_w: f64, q_l_min: f64) -> f64 {
+    let q_m3_s = q_l_min * 1e-3 / 60.0;
+    p_thermal_w / (RHO_L * q_m3_s * H_FG) * (RHO_L - RHO_V) / RHO_V
+}
+
+/// Neutral DWO stability boundary `N_pch,crit = 1.45 N_sub + 2.5`; operating
+/// points below the boundary are stable against density-wave oscillations.
+pub fn dwo_stable(n_sub: f64, n_pch: f64) -> bool {
+    n_pch < 1.45 * n_sub + 2.5
+}
+
+/// One row of the verified operational stability map (cf3 spec stability
+/// table): Ledinegg margin `m = dP_core/dQ - dP_pump/dQ` [kPa·min/L] with
+/// `m > 0` excursive-stable.
+#[derive(Debug, Clone, Copy)]
+pub struct StabilityRegime {
+    /// Regime label.
+    pub name: &'static str,
+    /// Primary inlet temperature [K].
+    pub t_in_k: f64,
+    /// Primary outlet temperature [K].
+    pub t_out_k: f64,
+    /// Core volumetric flow [L/min].
+    pub flow_l_min: f64,
+    /// Core differential pressure [kPa].
+    pub delta_p_kpa: f64,
+    /// Exit void fraction.
+    pub alpha_out: f64,
+    /// Ledinegg excursive margin `dP_core/dQ - dP_pump/dQ` [kPa·min/L].
+    pub ledinegg_margin: f64,
+    /// Density-wave-oscillation status.
+    pub dwo_status: &'static str,
+}
+
+/// Verified four-state operational stability map spanning startup, nominal
+/// operation, +20 % power surge and the low-flow transient.
+pub fn stability_map() -> [StabilityRegime; 4] {
+    [
+        StabilityRegime {
+            name: "Startup State",
+            t_in_k: 298.15,
+            t_out_k: 298.85,
+            flow_l_min: 4.85,
+            delta_p_kpa: 38.2,
+            alpha_out: 0.000,
+            ledinegg_margin: 8.42,
+            dwo_status: "Unconditionally Stable",
+        },
+        StabilityRegime {
+            name: "Nominal Operation",
+            t_in_k: 301.88,
+            t_out_k: 618.42,
+            flow_l_min: 4.85,
+            delta_p_kpa: 42.8,
+            alpha_out: 0.042,
+            ledinegg_margin: 3.15,
+            dwo_status: "Stable (High Margin)",
+        },
+        StabilityRegime {
+            name: "Thermal Surge (+20% Power)",
+            t_in_k: 301.88,
+            t_out_k: 642.10,
+            flow_l_min: 3.90,
+            delta_p_kpa: 51.6,
+            alpha_out: 0.218,
+            ledinegg_margin: -1.08,
+            dwo_status: "DWO Threshold Boundary",
+        },
+        StabilityRegime {
+            name: "Low-Flow Transient",
+            t_in_k: 320.00,
+            t_out_k: 635.00,
+            flow_l_min: 2.10,
+            delta_p_kpa: 58.4,
+            alpha_out: 0.410,
+            ledinegg_margin: -4.62,
+            dwo_status: "Unstable (Excursive/DWO)",
+        },
+    ]
+}
+
+/// Ledinegg excursive-stability check at a given operating point:
+/// stable iff `dP_system/dQ > dP_pump/dQ`, i.e. the margin is positive.
+pub fn ledinegg_stable(regime: &StabilityRegime) -> bool {
+    regime.ledinegg_margin > 0.0
+}
+
+/// Lower operational flow interlock [L/min] (cf3 control envelope).
+pub const FLOW_INTERLOCK_L_MIN: f64 = 3.95;
+/// Excursive pressure upper bound [kPa].
+pub const DP_EXCURSIVE_LIMIT_KPA: f64 = 51.6;
+
 /// Verified operating point of the 3D Eulerian-Eulerian solve at the
 /// 3093.44 W thermal surge boundary.
 #[derive(Debug, Clone, Copy)]
@@ -159,6 +284,23 @@ mod tests {
         assert!(departure_frequency(d_b) > 0.0);
         let (q1, qq, qe) = rpi_partition(T_SAT_K + 12.0, 343.0, d_b, 14_500.0);
         assert!(q1.is_finite() && qq.is_finite() && qe.is_finite());
+    }
+
+    #[test]
+    fn stability_map_ishii_zuber_bounds() {
+        let map = stability_map();
+        // Startup and nominal regimes are Ledinegg-stable; the low-flow
+        // transient is excursive by design of the stability map.
+        assert!(ledinegg_stable(&map[0]));
+        assert!(ledinegg_stable(&map[1]));
+        assert!(!ledinegg_stable(&map[3]));
+        assert!(pump_head_kpa(4.85) < PUMP_H0_KPA && pump_dp_slope(4.85) < 0.0);
+        let n_sub = subcooling_number(map[1].t_in_k);
+        let n_pch = phase_change_number(P_THERMAL_SURGE_W, map[1].flow_l_min);
+        assert!(n_sub > 0.0 && n_pch > 0.0);
+        assert!(dwo_stable(n_sub, n_pch));
+        // Nominal point sits below the excursive pressure threshold.
+        assert!(map[1].delta_p_kpa < DP_EXCURSIVE_LIMIT_KPA);
     }
 
     #[test]
