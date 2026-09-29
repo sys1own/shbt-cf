@@ -130,11 +130,9 @@ Physics Upgrades
     diffusion and trapping model for
     $`\text{Pd}_{0.9132}\text{Ir}_{0.0868}\text{D}_x`$ at $`x = 0.9132`$ with Soret
     thermophoresis and partial-molar-volume stress drift:
-
     ```math
     \mathbf{J}_D = -D_D(T,x)\nabla C_L + \frac{V_H^\ast}{RT}D_D C_L\nabla\sigma_h + \frac{Q^\ast}{RT^2}D_D C_L\nabla T
     ```
-
     using $`D_0 = 2.85\times10^{-7}\text{ m}^2/\text{s}`$, $`E_a = 0.224\text{ eV}`$,
     $`Q^\ast = 0.048\text{ eV}`$,
     $`V_H^\ast = 1.70\times10^{-6}\text{ m}^3/\text{mol}`$, dislocation traps
