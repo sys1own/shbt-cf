@@ -71,7 +71,7 @@ $$P_{\text{net}} = P_{\text{TEG}} - P_{\text{drive,net}} - P_{\text{aux}} = 1045
 | Subsystem | Metric | Verified Numerical Value |
 | --- | --- | --- |
 | **RCWA / Floquet Solver** | Mode Space Dimension | **15,625** ($625\text{ spatial harmonics} \times 25\text{ temporal sidebands}$) |
-| Dynamic Screening | Effective Screening Potential $U_{\text{eff}} = 352.48\text{ eV}$ ($\ge 350.00\text{ eV}$ bound; recalculated at $100\text{ Hz}$ from $\Delta x(\mathbf{r}, t)$) |
+| Dynamic Screening | Effective Screening Potential $U_{\text{eff}}$ | $352.48\text{ eV}$ ($\ge 350.00\text{ eV}$ bound; recalculated at $100\text{ Hz}$ from $\Delta x(\mathbf{r}, t)$) |
 |  | Coherent Lattice Branching Fraction $B_{\text{lat}}$ | **$0.999999996$** ($\ge 0.999999994$ bound) |
 |  | Nominal Deuterium Loading $x_0$ | **$0.9132$** stoichiometric (dynamic range $0.8850 \le x \le 0.9450$) |
 | **3D Thermal-Hydraulics** | Peak Surge Load ($P_{\text{thermal}}$) | **$3093.44\text{ W}$** continuous peak |
