@@ -126,10 +126,14 @@ Physics Upgrades
     zero-copy 64-byte aligned shbt_mmio_control_t register map with 100 Hz HIL
     frame kernel (shbt_floquet_mmio_execute_frame).
 
-- Active-Alloy McNabb–Foster Kinetics (src/physics/transport.rs): two-family
-  diffusion and trapping model for $`\text{Pd}_{0.9132}\text{Ir}_{0.0868}\text{D}_x`$at$`x = 0.9132`$ with Soret   thermophoresis and partial-molar-volume stress drift:    $$\mathbf{J}_D = -D_D(T,x)\nabla C_L + \frac{V_H^\ast}{RT}D_D C_L\nabla\sigma_h + \frac{Q^\ast}{RT^2}D_D C_L\nabla T$$    using $`D_0 = 2.85\times10^{-7}\text{ m}^2/\text{s}`$,$`E_a = 0.224\text{ eV}`$,$`Q^\ast = 0.048\text{ eV}`$,$`V_H^\ast = 1.70\times10^{-6}\text{ m}^3/\text{mol}`$, dislocation traps   $`N_1 = 1.50\times10^{24}\text{ m}^{-3}`$ ($`E_{t,1} = 0.23\text{ eV}`$) and
-  grain-boundary traps $`N_2 = 5.00\times10^{23}\text{ m}^{-3}`$
-  ($`E_{t,2} = 0.15\text{ eV}`$).
+  - Active-Alloy McNabb–Foster Kinetics (src/physics/transport.rs): two-family
+    diffusion and trapping model for $`\text{Pd}_{0.9132}\text{Ir}_{0.0868}\text{D}_x`$at$`x = 0.9132`$ with Soret
+    thermophoresis and partial-molar-volume stress drift:    $$\mathbf{J}_D = -D_D(T,x)\nabla C_L + \frac{V_H^\ast}{RT}D_D
+    C_L\nabla\sigma_h + \frac{Q^\ast}{RT^2}D_D C_L\nabla T$$    using $`D_0 = 2.85\times10^{-7}\text{
+    m}^2/\text{s}`$,$`E_a = 0.224\text{ eV}`$,$`Q^\ast = 0.048\text{ eV}`$,$`V_H^\ast = 1.70\times10^{-6}\text{
+    m}^3/\text{mol}`$, dislocation traps   $`N_1 = 1.50\times10^{24}\text{ m}^{-3}`$ ($`E_{t,1} = 0.23\text{ eV}`$) and
+    grain-boundary traps $`N_2 = 5.00\times10^{23}\text{ m}^{-3}`$
+    ($`E_{t,2} = 0.15\text{ eV}`$).
 
   - 3D Chaboche Thermoviscoplasticity & Joint FEA (src/physics/mechanics.rs,
     crates/shbt-fea-structural): two-term nonlinear kinematic hardening
