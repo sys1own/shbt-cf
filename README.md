@@ -43,20 +43,22 @@ tests/
 
 `shbt-cf` functions as the canonical cold fusion and thermal-hydraulic authority across the Static Holographic Boundary Theory (SHBT) digital twin ecosystem. It defines the baseline energy generation models, non-equilibrium dynamic screening dynamics, dual-stage thermoelectric generation (TEG) recovery routines, and closed-loop two-phase thermal rejection circuits governing both stationary fusion power grids and deep-space instrumentation platforms.
 
-* **Upstream Model & Ledger Integration:** `shbt-cf` exports the 1,800-module Lattice-Assisted Nuclear Reaction (LANR) core specification ($555.03\text{ W}$ net DC per cell, $999.054\text{ kW}$ net array) to [`sys1own/shbt-power`](https://github.com/sys1own/shbt-power) for power-plant auxiliary cold-start bootstrapping, and to [`sys1own/shbt-sglt`](https://github.com/sys1own/shbt-sglt) to balance the $906.000\text{ kW}$ non-sheddable entropy debt of the deep-space synthetic gravitational lensing telescope array.
+* **Upstream Model & Ledger Integration:** `shbt-cf` exports the 1,800-module Lattice-Assisted Nuclear Reaction (LANR) core specification (555.03 W net DC per cell, 999.054 kW net array) to [`sys1own/shbt-power`](https://github.com/sys1own/shbt-power) for power-plant auxiliary cold-start bootstrapping, and to [`sys1own/shbt-sglt`](https://github.com/sys1own/shbt-sglt) to balance the 906.000 kW non-sheddable entropy debt of the deep-space synthetic gravitational lensing telescope array.
+* **Warp Drive Energy & Cryogenic Transfer:** The 1,800-module LANR starter core (555.03 W net DC/cell, 999.054 kW net array) is additionally exported to [`sys1own/shbt-warp`](https://github.com/sys1own/shbt-warp) to balance the continuous 906.000 kW Landauer entropy debt of the boundary emitter array, maintaining a +93.054 kW raw electrical margin and +33.104 kW net continuous system surplus. `shbt-cf` further provides two-phase helium flow boiling and Kapitza thermal resistance models (ΔT<sub>K</sub> = 3.546 K) ensuring ΔT ≥ 11.790 K cryogenic headroom below superconducting quench limits.
 * **Kinetics & Fast Recovery Transfers:** The McNabb–Foster hydrogen transport and isotope trapping solvers (`McnabbFosterSolver`) developed in `shbt-cf` are imported by [`sys1own/shbt-ghost`](https://github.com/sys1own/shbt-ghost) (`ghost-lanr-interface`) for long-term fuel retention, while `shbt-cf` integrates the sub-2.5 ns Photoconductive Semiconductor Switch (PCSS) optical trigger logic and 94.20% SiC inductive recovery shunts engineered in [`sys1own/shbt-ghost`](https://github.com/sys1own/shbt-ghost) to harvest stored magnetic coil energy.
-* **Mathematical Foundations & Microkernel Contracts:** Foundational MPFR arbitrary-precision arithmetic, condition-number tracking, and symplectic integrators (`Yoshida6`) are anchored in the canonical WZW affine branch models from [`sys1own/shbt-precision`](https://github.com/sys1own/shbt-precision). Low-level register definitions and SECDED ECC standards derive from the bare-metal C11 `shbt-os` runtime in [`sys1own/shbt-qc`](https://github.com/sys1own/shbt-qc), while boundary Conformal Field Theory state-vector formulations and the invariant rational dark ledger capacity partitioning ($\eta_D = 23/33, \eta_A = 10/33$) originate from [`sys1own/shbt-exotic`](https://github.com/sys1own/shbt-exotic). Finally, zero-copy lock-free POSIX SPSC circular ring buffers and 128-byte dual-cacheline C-ABI mapping conventions are shared with [`sys1own/shbt-recon`](https://github.com/sys1own/shbt-recon).
+* **Mathematical Foundations & Microkernel Contracts:** Foundational MPFR arbitrary-precision arithmetic, condition-number tracking, and symplectic integrators (`Yoshida6`) are anchored in the canonical WZW affine branch models from [`sys1own/shbt-precision`](https://github.com/sys1own/shbt-precision). Low-level register definitions and SECDED ECC standards derive from the bare-metal C11 `shbt-os` runtime in [`sys1own/shbt-qc`](https://github.com/sys1own/shbt-qc), while boundary Conformal Field Theory state-vector formulations and the invariant rational dark ledger capacity partitioning (η<sub>D</sub> = 23/33, η<sub>A</sub> = 10/33) originate from [`sys1own/shbt-exotic`](https://github.com/sys1own/shbt-exotic). Finally, zero-copy lock-free POSIX SPSC circular ring buffers and 128-byte dual-cacheline C-ABI mapping conventions are shared with [`sys1own/shbt-recon`](https://github.com/sys1own/shbt-recon).
 
 | Repository | Ecosystem Domain Role | Bidirectional Technology Transfer & Direct Integration with `shbt-cf` |
 | --- | --- | --- |
-| [`sys1own/shbt-cf`](https://github.com/sys1own/shbt-cf) | Cold Fusion Authority & Engineering Workbench | **Canonical repository.** Provides the primary 1,800-module LANR reactor core ($555.03\text{ W}$ net DC/cell, $999.054\text{ kW}$ array), dynamic Floquet-Adler-Wiser dielectric screening ($U_{\text{eff}} = 352.48\text{ eV}$), dual-stage TEG enthalpy models, and 50-gate numerical verification harness (`GATE-01`–`GATE-50`). |
-| [`sys1own/shbt-power`](https://github.com/sys1own/shbt-power) | Master Commercial Fusion Digital Twin | Directly integrates `shbt-cf`'s 1,800-module LANR starter array into `crates/shbt-power-grid` to drive a 7.51-minute cold-start bootstrap sequence, and imports `shbt-cf`'s dual-stage ($\text{CoSb}_3 / \text{ZrNiSn}$) TEG enthalpy recovery ($447.903\text{ MW}$) and 3D Eulerian-Eulerian helium coolant models. |
-| [`sys1own/shbt-ghost`](https://github.com/sys1own/shbt-ghost) | Fast Optical Interlocks & Metric Stabilization | Supplies sub-2.5 ns PCSS crowbars, 94.20% SiC inductive recovery shunts recovering $16.62\text{ mJ/cycle}$ for `shbt-cf`'s magnetic coils, and ADM 3+1 metric stabilization ($\beta^i \to 0$, $\vert \det(g)+1 \vert \le 10^{-12}$); imports `shbt-cf`'s McNabb–Foster deuterium kinetics (`ghost-lanr-interface`) for mobile-fuel retention. |
-| [`sys1own/shbt-exotic`](https://github.com/sys1own/shbt-exotic) | Boundary CFT Foundations & Dark Ledger | Provides the Boundary Conformal Field Theory state-vector formulations, Heegaard–Floer symplectic boundary relabeling ($T^\partial_{ij}$), and invariant rational dark ledger capacity partitioning ($\eta_D = 23/33, \eta_A = 10/33$) underlying `shbt-cf`'s coherent lattice branching fraction ($B_{\text{lat}} \ge 0.999999994$). |
-| [`sys1own/shbt-precision`](https://github.com/sys1own/shbt-precision) | Computational Mathematics Core & Precision Audits | Supplies the 512-bit arbitrary-precision hybrid numeric framework (`rug`/MPFR), canonical WZW affine branch $(26, 8, 312)$ arithmetic, and zero-allocation execution primitives supporting `shbt-core-math`'s MPFR-backed solvers, conditioning estimators ($\kappa_1$), and symplectic Yoshida-6 integrators. |
-| [`sys1own/shbt-sglt`](https://github.com/sys1own/shbt-sglt) | SGLT Telescope Platform & Relativistic Optics | Imports `shbt-cf`'s 1,800-module LANR power ledger (`crates/sglt-lanr-power`) for its deep-space satellite bus, satisfying its $906.000\text{ kW}$ non-sheddable entropy debt with $999.054\text{ kW}$ of generated power ($+93.054\text{ kW}$ margin). |
+| [`sys1own/shbt-cf`](https://github.com/sys1own/shbt-cf) | Cold Fusion Authority & Engineering Workbench | **Canonical repository.** Provides the primary 1,800-module LANR reactor core (555.03 W net DC/cell, 999.054 kW array), dynamic Floquet-Adler-Wiser dielectric screening (U<sub>eff</sub> = 352.48 eV), dual-stage TEG enthalpy models, and 50-gate numerical verification harness (`GATE-01`–`GATE-50`). |
+| [`sys1own/shbt-power`](https://github.com/sys1own/shbt-power) | Master Commercial Fusion Digital Twin | Directly integrates `shbt-cf`'s 1,800-module LANR starter array into `crates/shbt-power-grid` to drive a 7.51-minute cold-start bootstrap sequence, and imports `shbt-cf`'s dual-stage (CoSb <sub>3</sub> / ZrNiSn) TEG enthalpy recovery (447.903 MW) and 3D Eulerian-Eulerian helium coolant models. |
+| [`sys1own/shbt-ghost`](https://github.com/sys1own/shbt-ghost) | Fast Optical Interlocks & Metric Stabilization | Supplies sub-2.5 ns PCSS crowbars, 94.20% SiC inductive recovery shunts recovering 16.62 mJ/cycle for `shbt-cf`'s magnetic coils, and ADM 3+1 metric stabilization (β<sup>i</sup> → 0, |det(g)+1 |≤ 10<sup>-12</sup>); imports `shbt-cf`'s McNabb–Foster deuterium kinetics (`ghost-lanr-interface`) for mobile-fuel retention. |
+| [`sys1own/shbt-exotic`](https://github.com/sys1own/shbt-exotic) | Boundary CFT Foundations & Dark Ledger | Provides the Boundary Conformal Field Theory state-vector formulations, Heegaard–Floer symplectic boundary relabeling (T<sup>∂</sup><sub>ij</sub>), and invariant rational dark ledger capacity partitioning (η<sub>D</sub> = 23/33, η<sub>A</sub> = 10/33) underlying `shbt-cf`'s coherent lattice branching fraction (B<sub>lat</sub> ≥ 0.999999994). |
+| [`sys1own/shbt-precision`](https://github.com/sys1own/shbt-precision) | Computational Mathematics Core & Precision Audits | Supplies the 512-bit arbitrary-precision hybrid numeric framework (`rug`/MPFR), canonical WZW affine branch (26, 8, 312) arithmetic, and zero-allocation execution primitives supporting `shbt-core-math`'s MPFR-backed solvers, conditioning estimators (κ<sub>1</sub>), and symplectic Yoshida-6 integrators. |
+| [`sys1own/shbt-sglt`](https://github.com/sys1own/shbt-sglt) | SGLT Telescope Platform & Relativistic Optics | Imports `shbt-cf`'s 1,800-module LANR power ledger (`crates/sglt-lanr-power`) for its deep-space satellite bus, satisfying its 906.000 kW non-sheddable entropy debt with 999.054 kW of generated power (+93.054 kW margin). |
+| [`sys1own/shbt-warp`](https://github.com/sys1own/shbt-warp) | Holographic Warp Drive & Spacetime Engine | Imports `shbt-cf`'s 1,800-module LANR power ledger (999.054 kW net DC) to balance its 906.000 kW boundary-emitter Landauer debt (+93.054 kW raw margin, +33.104 kW net surplus), and its two-phase helium/Kapitza cryo models (ΔT<sub>K</sub> = 3.546 K) certifying ≥ 11.790 K junction headroom. |
 | [`sys1own/shbt-qc`](https://github.com/sys1own/shbt-qc) | Bare-Metal Microkernel Runtime (`shbt-os`) & HIL | Supplies the freestanding C11 `shbt-os` runtime, SECDED Hamming(72,64) ECC scrubbing, and normative base 56-byte `SHBT-MMIO-1` register layout standard at `0x70000000`, which `shbt-cf` extends into its 128-byte dual-cacheline aligned `shbt_mmio_control_t` HIL register structure. |
-| [`sys1own/shbt-recon`](https://github.com/sys1own/shbt-recon) | Macroscopic State Tracking & Telemetry Rings | Supplies macroscopic Stinespring dilation ($V_{\text{unified}}^{\text{macro}}$ over $N \sim 10^{20}$ particles), 128-byte dual-cacheline C-ABI mapping standards, and high-throughput lock-free POSIX SPSC circular shared-memory telemetry rings implemented in `shbt-fabrication-hil`. |
+| [`sys1own/shbt-recon`](https://github.com/sys1own/shbt-recon) | Macroscopic State Tracking & Telemetry Rings | Supplies macroscopic Stinespring dilation (V<sub>unified</sub><sup>macro</sup> over N ~ 10<sup>20</sup> particles), 128-byte dual-cacheline C-ABI mapping standards, and high-throughput lock-free POSIX SPSC circular shared-memory telemetry rings implemented in `shbt-fabrication-hil`. |
 
 ---
 
@@ -70,25 +72,25 @@ $$P_{\text{net}} = P_{\text{TEG}} - P_{\text{drive,net}} - P_{\text{aux}} = 1045
 
 | Subsystem | Metric | Verified Numerical Value |
 | --- | --- | --- |
-| **RCWA / Floquet Solver** | Mode Space Dimension | **15,625** ($625\text{ spatial harmonics} \times 25\text{ temporal sidebands}$) |
-| Dynamic Screening | Effective Screening Potential $`U_{\text{eff}}`$ | $`352.48\text{ eV}`$ ($`\ge 350.00\text{ eV}`$ bound; recalculated at $`100\text{ Hz}`$ from $`\Delta x(\mathbf{r}, t)`$) |
-|  | Coherent Lattice Branching Fraction $B_{\text{lat}}$ | **$0.999999996$** ($\ge 0.999999994$ bound) |
-|  | Nominal Deuterium Loading $x_0$ | **$0.9132$** stoichiometric (dynamic range $0.8850 \le x \le 0.9450$) |
-| **3D Thermal-Hydraulics** | Peak Surge Load ($P_{\text{thermal}}$) | **$3093.44\text{ W}$** continuous peak |
-|  | Hot-Side / Coolant Return Temp | **$618.42\text{ K} / 301.88\text{ K}$** (limits $623.15\text{ K} / 303.15\text{ K}$) |
-|  | Peak Void Fraction $\alpha_v$ | **$0.162$** (limit $\le 0.185$) |
-|  | Core Pressure Drop / $\phi_{lo}^2$ | **$42.8\text{ kPa} / 1.34$** (limits $50.0\text{ kPa} / 1.50$) |
-|  | CHF Operating Margin | **$q^{\prime\prime}/q^{\prime\prime}_{\text{CHF}} = 0.412$** ($2.42\times$ margin, limit $\le 0.50$) |
-| **Magnetic Excitation** | RF Drive / Coil | **$f_{\text{rf}} = 68.5\text{ kHz}$, thin-film $\text{MgB}_2$** ($T_c = 39.0\text{ K}$, $B_{\text{peak}} = 1.42\text{ T}$) |
-|  | Stored Inductive Energy | **$E_m = 16.62\text{ mJ/cycle}$** ($P_{\text{reactive}} = 1138.47\text{ VAR}$) |
-|  | SiC Crowbar Recovery | **$\eta_{\text{SiC}} = 94.20\%$** ($\ge 92.00\%$) |
-|  | Parasitic Drive Power | **$368.45\text{ W}$** (recovered $88.45\text{ W}$ to $400\text{ V}$ bus; limit $< 380.00\text{ W}$) |
-|  | Gross TEG / Auxiliary | **$1045.58\text{ W} / 122.10\text{ W}$** |
-|  | **Net Electrical Output $P_{\text{net}}$** | **$+555.03\text{ W}$** ($> +550.00\text{ W}$) |
-| **GST Self-Healing Optics** | Buffer / Pulse | **$\text{Ge}_2\text{Sb}_2\text{Te}_5$** layer, $F_{\text{pulse}} = 27.9\text{ mJ/cm}^2$, $t_{\text{pulse}} = 50\text{ ns}$ |
-|  | Post-Healing Roughness / $A$ / $R_{\text{grating}}$ | **$0.62\text{ nm} / 98.74\% / 99.94\%$** (30-year service life) |
+| **RCWA / Floquet Solver** | Mode Space Dimension | **15,625** (625 spatial harmonics × 25 temporal sidebands) |
+| Dynamic Screening | Effective Screening Potential U<sub>eff</sub> | 352.48 eV (≥ 350.00 eV bound; recalculated at 100 Hz from Δ x(r, t)) |
+|  | Coherent Lattice Branching Fraction B<sub>lat</sub> | **0.999999996** (≥ 0.999999994 bound) |
+|  | Nominal Deuterium Loading x<sub>0</sub> | **0.9132** stoichiometric (dynamic range 0.8850 ≤ x ≤ 0.9450) |
+| **3D Thermal-Hydraulics** | Peak Surge Load (P<sub>thermal</sub>) | **3093.44 W** continuous peak |
+|  | Hot-Side / Coolant Return Temp | **618.42 K / 301.88 K** (limits 623.15 K / 303.15 K) |
+|  | Peak Void Fraction α<sub>v</sub> | **0.162** (limit ≤ 0.185) |
+|  | Core Pressure Drop / φ<sub>lo</sub><sup>2</sup> | **42.8 kPa / 1.34** (limits 50.0 kPa / 1.50) |
+|  | CHF Operating Margin | **q<sup>′′</sup>/q<sup>′′</sup><sub>CHF</sub> = 0.412** (2.42× margin, limit ≤ 0.50) |
+| **Magnetic Excitation** | RF Drive / Coil | **f<sub>rf</sub> = 68.5 kHz, thin-film MgB <sub>2</sub>** (T<sub>c</sub> = 39.0 K, B<sub>peak</sub> = 1.42 T) |
+|  | Stored Inductive Energy | **E<sub>m</sub> = 16.62 mJ/cycle** (P<sub>reactive</sub> = 1138.47 VAR) |
+|  | SiC Crowbar Recovery | **η<sub>SiC</sub> = 94.20%** (≥ 92.00%) |
+|  | Parasitic Drive Power | **368.45 W** (recovered 88.45 W to 400 V bus; limit < 380.00 W) |
+|  | Gross TEG / Auxiliary | **1045.58 W / 122.10 W** |
+|  | **Net Electrical Output P<sub>net</sub>** | **+555.03 W** (> +550.00 W) |
+| **GST Self-Healing Optics** | Buffer / Pulse | **Ge <sub>2</sub> Sb <sub>2</sub> Te <sub>5</sub>** layer, F<sub>pulse</sub> = 27.9 mJ/cm <sup>2</sup>, t<sub>pulse</sub> = 50 ns |
+|  | Post-Healing Roughness / A / R<sub>grating</sub> | **0.62 nm / 98.74% / 99.94%** (30-year service life) |
 | **C-ABI MMIO Map** | `shbt_mmio_control_t` | **128-byte dual-cacheline record (64-byte aligned)**, `matrix_dim = 15625` at `0x0040`, GPUDirect pointer at `0x0048` |
-| **Numerical Audit** | Residual Sequence / Status | **$[1.0 \times 10^{-4}, 1.0 \times 10^{-6}, 1.0 \times 10^{-8}]$** (Converged: True, Singularities: 0, Gates: 50/50 PASS) |
+| **Numerical Audit** | Residual Sequence / Status | **[1.0 × 10<sup>-4</sup>, 1.0 × 10<sup>-6</sup>, 1.0 × 10<sup>-8</sup>]** (Converged: True, Singularities: 0, Gates: 50/50 PASS) |
 
 Physics Upgrades
 
@@ -96,81 +98,81 @@ Physics Upgrades
     two-phase liquid/vapor conservation with Ishii-Zuber drag, Tomiyama lift,
     Antal-Frank wall lubrication, Burns turbulent dispersion, and RPI wall
     heat-flux partitioning
-    ($`q^{\prime\prime}_{\text{tot}} = q^{\prime\prime}_{1\phi} + q^{\prime\prime}_q + q^{\prime\prime}_e`$
+    (q<sup>′′</sup><sub>tot</sub> = q<sup>′′</sup><sub>1φ</sub> + q<sup>′′</sup><sub>q</sub> + q<sup>′′</sup><sub>e</sub>
     with Hibiki-Ishii site density) across 64 parallel OFHC-Cu micro-channels
-    ($`D_h = 250\,\mu\text{m}`$).
+    (D<sub>h</sub> = 250 μ m).
 
   - Dynamic Non-Equilibrium Deuterium Screening (src/physics/screening.rs):
     Fick-Soret transport
-    $`\partial_t x = \nabla \cdot [D_D(T,x)(\nabla x + x(1-x)Q^\ast\nabla T / (k_B T^2))] + \dot{S}_{\text{phase}}`$
-    with $`D_0 = 2.85\times10^{-7}\text{ m}^2/\text{s}`$, $`E_a = 0.224\text{ eV}`$,
-    $`Q^\ast = 0.048\text{ eV}`$, driving $`100\text{ Hz}`$ recalculation of the
-    $`15{,}625 \times 15{,}625`$ Floquet-Adler-Wiser dielectric matrix
-    $`\varepsilon_{\mathbf{G},\mathbf{G}^\prime} = \delta_{\mathbf{G},\mathbf{G}^\prime} - v(\mathbf{q}+\mathbf{G})\chi^0_{\mathbf{G},\mathbf{G}^\prime}(x)`$.
+    ∂<sub>t</sub> x = ∇ · [D<sub>D</sub>(T,x)(∇ x + x(1-x)Q<sup>*</sup>∇ T / (k<sub>B</sub> T<sup>2</sup>))] + Ṡ<sub>phase</sub>
+    with D<sub>0</sub> = 2.85×10<sup>-7</sup> m <sup>2</sup>/ s, E<sub>a</sub> = 0.224 eV,
+    Q<sup>*</sup> = 0.048 eV, driving 100 Hz recalculation of the
+    15,625 × 15,625 Floquet-Adler-Wiser dielectric matrix
+    varepsilon<sub>G,G<sup>′</sup></sub> = δ<sub>G,G<sup>′</sup></sub> - v(q+G)χ<sup>0</sup><sub>G,G<sup>′</sup></sub>(x).
 
-  - High-$`T_c`$ Superconducting Coils + SiC Crowbar (src/physics/power.rs):
-    thin-film $`\text{MgB}_2`$ micro-coils ($`T_c = 39.0\text{ K}`$) at $`68.5\text{ kHz}`$
+  - High-T<sub>c</sub> Superconducting Coils + SiC Crowbar (src/physics/power.rs):
+    thin-film MgB <sub>2</sub> micro-coils (T<sub>c</sub> = 39.0 K) at 68.5 kHz
     with Bean critical-state + flux-flow losses
-    ($`P_{\text{coil}} = 12.35\text{ W}`$); SiC crowbar harvests the
-    $`16.62\text{ mJ/cycle}`$ inductive energy at $`94.20\%`$ efficiency, cutting
-    parasitic drive from $`422.22\text{ W}`$ to $`368.45\text{ W}`$.
+    (P<sub>coil</sub> = 12.35 W); SiC crowbar harvests the
+    16.62 mJ/cycle inductive energy at 94.20% efficiency, cutting
+    parasitic drive from 422.22 W to 368.45 W.
 
   - GST Optical Self-Healing (src/physics/optics_healing.rs): chalcogenide
-    $`\text{Ge}_2\text{Sb}_2\text{Te}_5`$ buffer in the
-    $`\text{Pd}_{0.9132}\text{Ir}_{0.0868}`$ grating stack; $`50\text{ ns}`$
-    electro-thermal pulses ($`27.9\text{ mJ/cm}^2`$) trigger melt-quench
-    recrystallization restoring $`R_a \lt 0.8\text{ nm}`$, $`A \ge 98.40\%`$,
-    $`R_{\text{grating}} \gt 99.9\%`$.
+    Ge <sub>2</sub> Sb <sub>2</sub> Te <sub>5</sub> buffer in the
+    Pd <sub>0.9132</sub> Ir <sub>0.0868</sub> grating stack; 50 ns
+    electro-thermal pulses (27.9 mJ/cm <sup>2</sup>) trigger melt-quench
+    recrystallization restoring R<sub>a</sub> lt 0.8 nm, A ≥ 98.40%,
+    R<sub>grating</sub> gt 99.9%.
 
   - C-ABI MMIO Map (crates/shbt-fabrication-hil/include/shbt_floquet_mmio.h):
     zero-copy 64-byte aligned shbt_mmio_control_t register map with 100 Hz HIL
     frame kernel (shbt_floquet_mmio_execute_frame).
 
   - Active-Alloy McNabb–Foster Kinetics (src/physics/transport.rs): two-family
-    diffusion and trapping model for $`\text{Pd}_{0.9132}\text{Ir}_{0.0868}\text{D}_x`$at$`x = 0.9132`$ with Soret
+    diffusion and trapping model for Pd <sub>0.9132</sub> Ir <sub>0.0868</sub> D <sub>x</sub>atx = 0.9132 with Soret
     thermophoresis and partial-molar-volume stress drift:    $$\mathbf{J}_D = -D_D(T,x)\nabla C_L + \frac{V_H^\ast}{RT}D_D
     C_L\nabla\sigma_h + \frac{Q^\ast}{RT^2}D_D C_L\nabla T$$    using $`D_0 = 2.85\times10^{-7}\text{
-    m}^2/\text{s}`$,$`E_a = 0.224\text{ eV}`$,$`Q^\ast = 0.048\text{ eV}`$,$`V_H^\ast = 1.70\times10^{-6}\text{
-    m}^3/\text{mol}`$, dislocation traps   $`N_1 = 1.50\times10^{24}\text{ m}^{-3}`$ ($`E_{t,1} = 0.23\text{ eV}`$) and
-    grain-boundary traps $`N_2 = 5.00\times10^{23}\text{ m}^{-3}`$
-    ($`E_{t,2} = 0.15\text{ eV}`$).
+    m}^2/\text{s}`,`E_a = 0.224\text{ eV}`,`Q^\ast = 0.048\text{ eV}`,`V_H^\ast = 1.70\times10^{-6}\text{
+    m}^3/\text{mol}`, dislocation traps`N_1 = 1.50\times10^{24}\text{ m}^{-3}`(`E_{t,1} = 0.23\text{ eV}`$) and
+    grain-boundary traps N<sub>2</sub> = 5.00×10<sup>23</sup> m <sup>-3</sup>
+    (E<sub>t,2</sub> = 0.15 eV).
 
   - 3D Chaboche Thermoviscoplasticity & Joint FEA (src/physics/mechanics.rs,
     crates/shbt-fea-structural): two-term nonlinear kinematic hardening
-    ($`C_1 = 45.2\text{ GPa}`$, $`\gamma_1 = 410`$, $`C_2 = 8.5\text{ GPa}`$, $`\gamma_2 = 62`$
-    at $`298.15\text{ K}`$, linearly interpolated to the $`623.15\text{ K}`$ set) plus
-    Voce isotropic hardening ($`R_\infty = 85\text{ MPa}`$, $`b = 12.46`$); VCCT energy
-    release rates on the $`3.5\,\mu\text{m}`$ Ni–Cu–Sn TLP bondline
-    ($`G_{IC} = 25`$, $`G_{IIC} = 65`$, $`G_{IIIC} = 60\text{ J/m}^2`$, delamination factor
-    $`f = 0.484`$); Morrow strain-life fatigue $`N_f \approx 65{,}474 \ge 52{,}400`$
+    (C<sub>1</sub> = 45.2 GPa, γ<sub>1</sub> = 410, C<sub>2</sub> = 8.5 GPa, γ<sub>2</sub> = 62
+    at 298.15 K, linearly interpolated to the 623.15 K set) plus
+    Voce isotropic hardening (R_∞ = 85 MPa, b = 12.46); VCCT energy
+    release rates on the 3.5 μ m Ni–Cu–Sn TLP bondline
+    (G<sub>IC</sub> = 25, G<sub>IIC</sub> = 65, G<sub>IIIC</sub> = 60 J/m <sup>2</sup>, delamination factor
+    f = 0.484); Morrow strain-life fatigue N<sub>f</sub> ≈ 65,474 ≥ 52,400
     cycles.
 
   - Plant Stability Maps (src/physics/thermal_hydraulics.rs): system pump head
-    $`H_{\text{pump}}(Q) = (65.0 - 1.25Q - 0.62Q^2)\text{ kPa}`$ coupled to the
+    H<sub>pump</sub>(Q) = (65.0 - 1.25Q - 0.62Q<sup>2</sup>) kPa coupled to the
     two-phase core; Ledinegg excursive margin and Ishii–Zuber DWO ratio
-    $`N_{\text{pch,crit}} = 1.45\,N_{\text{sub}} + 2.5`$ evaluated across startup,
-    nominal ($`\Delta P = 42.8\text{ kPa}`$ @ $`4.85\text{ L/min}`$), surge, and
-    low-flow regimes with $`Q \lt 3.95\text{ L/min}`$ interlock.
+    N<sub>pch,crit</sub> = 1.45 N<sub>sub</sub> + 2.5 evaluated across startup,
+    nominal (Δ P = 42.8 kPa @ 4.85 L/min), surge, and
+    low-flow regimes with Q lt 3.95 L/min interlock.
 
-  - 3D OpenMC Radiation Transport (src/physics/radiation.rs): $`2.45\text{ MeV}`$ DD
-    neutrons plus secondary capture gammas ($`478\text{ keV}`$ from
-    $`^{10}\text{B}(n,\alpha)^{7}\text{Li}^\ast`$, $`2.223\text{ MeV}`$ from
-    $`\text{H}(n,\gamma)\text{D}`$) through the $`\text{H}_2\text{O}`$ / 316L / 5 wt%
+  - 3D OpenMC Radiation Transport (src/physics/radiation.rs): 2.45 MeV DD
+    neutrons plus secondary capture gammas (478 keV from
+    <sup>10</sup> B (n,α)<sup>7</sup> Li <sup>*</sup>, 2.223 MeV from
+    H (n,γ) D) through the H <sub>2</sub> O / 316L / 5 wt%
     B-PE / Pb shielding stack; accessible surface dose
-    $`(0.38 \pm 0.012)\,\mu\text{Sv/h} \lt 0.50\,\mu\text{Sv/h}`$ at
-    $`Q_N \le 10^6\text{ n/s}`$.
+    (0.38 ± 0.012) μ Sv/h lt 0.50 μ Sv/h at
+    Q<sub>N</sub> ≤ 10<sup>6</sup> n/s.
 
   - GUM Covariance Metrology (src/physics/metrology.rs,
     crates/shbt-metrology-gum): ISO/IEC 98-3 multi-variable input covariance
-    $`\boldsymbol{\Sigma}_X`$ ($`8\times8`$, correlations
-    $`r_{T_{\text{in}},T_{\text{out}}} = 0.85`$, $`r_{Q_t,Q_T} = 0.92`$,
-    $`r_{Q,UA} = 0.30`$) with analytic/dual-number Jacobian $`\mathbf{J}`$,
-    $`\boldsymbol{\Sigma}_Y = \mathbf{J}\boldsymbol{\Sigma}_X\mathbf{J}^T`$,
-    $`N = 10^6`$ MC cross-check; propagated bounds
-    $`u(P_{\text{thermal}}) \approx 11.8\text{ W}`$,
-    $`u(P_{^{4}\text{He}}) \approx 2.5\times10^{-9}\text{ mbar}`$,
-    $`u(\text{FOM}) \approx 0.018`$ securing $`P_{\text{net}} = +555.03\text{ W}`$ at
-    $`3\sigma`$.
+    Σ<sub>X</sub> (8×8, correlations
+    r_T<sub>in</sub>,T<sub>out</sub> = 0.85, r<sub>Q<sub>t</sub>,Q<sub>T</sub></sub> = 0.92,
+    r<sub>Q,UA</sub> = 0.30) with analytic/dual-number Jacobian J,
+    Σ<sub>Y</sub> = JΣ_XJ<sup>T</sup>,
+    N = 10<sup>6</sup> MC cross-check; propagated bounds
+    u(P<sub>thermal</sub>) ≈ 11.8 W,
+    u(P_<sup>4</sup> He ) ≈ 2.5×10<sup>-9</sup> mbar,
+    u( FOM ) ≈ 0.018 securing P<sub>net</sub> = +555.03 W at
+    3σ.
 
   - 128-byte C-ABI MMIO Record
     (crates/shbt-fabrication-hil/include/shbt_floquet_mmio.h):
@@ -238,8 +240,8 @@ python3 scripts/verify_zerocopy.py
 To prevent non-deterministic floating-point drifting across microarchitectures and compiler toolchains:
 
 1. **Strict IEEE 754 Compliance:** Fast-math flag sets are explicitly disabled across all workspace profiles (`-C llvm-args=-enable-no-nans-fp-math=false -C llvm-args=-enable-no-signed-zeros-fp-math=false`).
-2. **Fixed-Point Accumulation:** Global energy and state accumulators utilize `shbt_core_math::fixed::Q64x64` 128-bit signed fixed-point integers ($2^{-64}$ fractional resolution).
-3. **Adaptive Precision Inversion:** Ill-conditioned linear algebra operations dynamically select MPFR mantissa bit-widths via `PrecisionMode::arbitrary_for_condition_number` based on matrix condition number $\kappa_1(A)$ and promotion thresholds ($\kappa(A) \cdot \epsilon_{64} \ge \theta_{\text{thresh}}$).
+2. **Fixed-Point Accumulation:** Global energy and state accumulators utilize `shbt_core_math::fixed::Q64x64` 128-bit signed fixed-point integers (2<sup>-64</sup> fractional resolution).
+3. **Adaptive Precision Inversion:** Ill-conditioned linear algebra operations dynamically select MPFR mantissa bit-widths via `PrecisionMode::arbitrary_for_condition_number` based on matrix condition number κ<sub>1</sub>(A) and promotion thresholds (κ(A) · ε<sub>64</sub> ≥ θ<sub>thresh</sub>).
 4. **Denormal Handling:** Hardware denormals-are-zero (DAZ) and flush-to-zero (FTZ) modes are explicitly enforced via MXCSR (`x86_64`) and FPCR (`aarch64`).
 
 ---
@@ -252,20 +254,20 @@ To prevent non-deterministic floating-point drifting across microarchitectures a
 | --- | --- |
 | `fixed` | `Q64x64` 128-bit signed fixed-point math with checked arithmetic. |
 | `precision` | Conditioning analysis (`bits_lost_to_conditioning`), scaling mantissa widths between 128 and 512 bits. |
-| `mp` | MPFR-backed `MpMatrix` LU decomposition, condition number estimation $\kappa_1(A)$, and adaptive precision solvers. |
-| `lie` | Exponential/logarithmic maps for $SO(3)$ rotations and $SE(3)$ spatial poses without gimbal-lock or quaternion ambiguities. |
+| `mp` | MPFR-backed `MpMatrix` LU decomposition, condition number estimation κ<sub>1</sub>(A), and adaptive precision solvers. |
+| `lie` | Exponential/logarithmic maps for SO(3) rotations and SE(3) spatial poses without gimbal-lock or quaternion ambiguities. |
 | `symplectic` | 7-stage 6th-order Yoshida integrator (`Yoshida6`) operating on compensated phase-space state vectors. |
 | `fpenv` | Scoped CPU register guard (`FlushToZeroGuard`) setting DAZ/FTZ flags across threads. |
 
-*Verification Gate:* A double-well Duffing oscillator integrated for $10^7$ `Yoshida6` steps maintains energy drift $\vert \Delta H / H_0 \vert < 10^{-12}$ (measured $\approx 6 \times 10^{-14}$) while a 1-ulp shadow trajectory diverges to $\mathcal{O}(1)$.
+*Verification Gate:* A double-well Duffing oscillator integrated for 10<sup>7</sup> `Yoshida6` steps maintains energy drift |Δ H / H<sub>0</sub> |< 10<sup>-12</sup> (measured ≈ 6 × 10<sup>-14</sup>) while a 1-ulp shadow trajectory diverges to O(1).
 
 ### 2. Physical Solvers & Domain Engines
 
 | Crate / Module | Scope & Theoretical Implementation |
 | --- | --- |
-| `shbt-dielectric-floquet` | Assembles composite polarization tensors $`\Pi_{\mathbf{G}\mathbf{G}^\prime}^{mn}(\mathbf{q}, \omega)`$ and dielectric matrices $`\boldsymbol{\varepsilon} = \mathbf{I} - v_{\mathbf{G}} \boldsymbol{\Pi}`$ under periodic driving. Evaluates elastodynamics and inverse tensors with matrix conditioning checks ($`\kappa_1`$) until convergence ($`\lVert \varepsilon^{-1}_{k+1} - \varepsilon^{-1}_k \rVert_\infty \lt 10^{-10}`$). |
-| `shbt-rcwa-optics` / `shbt-rcwa` | Full-vector 3D RCWA solver ($`15{,}625`$-dimensional system space) with Li-factorized convolution matrices ($`\lfloor 1/f \rfloor^{-1}`$), Redheffer star-product S-matrix recursion, and SPP field enhancement verification ($`\mathcal{F}_{z,785} \ge 124.5`$, $`\mathcal{F}_{z,802.5} \ge 138.2`$). |
-| `shbt-fea-structural` | Non-linear structural modeling: DIN 2092/2093 Inconel X-750 Belleville disc spring stacks ($K_{\text{stack}} = 5.0 \times 10^6\text{ N/m}$), 3D Chaboche viscoplasticity backstress integration, Stoney bilayer stress evaluations, and Coffin-Manson fatigue lifing ($N_f \ge 52{,}400\text{ cycles}$). |
+| `shbt-dielectric-floquet` | Assembles composite polarization tensors Π<sub>GG<sup>′</sup></sub><sup>mn</sup>(q, ω) and dielectric matrices varepsilon = I - v<sub>G</sub> Π under periodic driving. Evaluates elastodynamics and inverse tensors with matrix conditioning checks (κ<sub>1</sub>) until convergence (lVert varepsilon<sup>-1</sup><sub>k+1</sub> - varepsilon<sup>-1</sup><sub>k</sub> rVert_∞ lt 10<sup>-10</sup>). |
+| `shbt-rcwa-optics` / `shbt-rcwa` | Full-vector 3D RCWA solver (15,625-dimensional system space) with Li-factorized convolution matrices (lfloor 1/f rfloor<sup>-1</sup>), Redheffer star-product S-matrix recursion, and SPP field enhancement verification (F<sub>z,785</sub> ≥ 124.5, F<sub>z,802.5</sub> ≥ 138.2). |
+| `shbt-fea-structural` | Non-linear structural modeling: DIN 2092/2093 Inconel X-750 Belleville disc spring stacks (K<sub>stack</sub> = 5.0 × 10<sup>6</sup> N/m), 3D Chaboche viscoplasticity backstress integration, Stoney bilayer stress evaluations, and Coffin-Manson fatigue lifing (N<sub>f</sub> ≥ 52,400 cycles). |
 | `shbt-contact` | Elastohydrodynamic contact solvers and projected damped active set (PDAS) numerical models for contact mechanics under extreme thermal loading. |
 | `src/physics/` | Core physics pipeline covering 512-bit SIMD dynamic screening (`screening.rs`), Lindblad/Magnus trace-preserving quantum kinetics (`kinetics.rs`), 2-family McNabb-Foster stress/Soret transport (`transport.rs`), and complete closed-loop thermal-hydraulic power ledger (`power.rs`). |
 
@@ -273,8 +275,8 @@ To prevent non-deterministic floating-point drifting across microarchitectures a
 
 | Crate | Scope & Theoretical Implementation |
 | --- | --- |
-| `shbt-metrology-gum` | GUM Supplement 1 parallel Monte Carlo engine ($N \ge 10^6$ iterations) and dual-number automatic differentiation. Evaluates correlated input distributions via Cholesky decomposition across deterministic per-worker Xoshiro256** PRNG streams. |
-| `shbt-fabrication-hil` | POSIX shared memory ring (`shm_open`/`mmap`) with lock-free atomic SPSC indexing and cache-aligned `#[repr(C, align(64))]` 64-byte frame structures. Features CFT kinetics, McNabb-Foster hydrogen transport modeling, Tokio drain task, latency profiling histograms, and reduced-order model (ROM) residual monitoring ($\chi^2 / \nu$). |
+| `shbt-metrology-gum` | GUM Supplement 1 parallel Monte Carlo engine (N ≥ 10<sup>6</sup> iterations) and dual-number automatic differentiation. Evaluates correlated input distributions via Cholesky decomposition across deterministic per-worker Xoshiro256** PRNG streams. |
+| `shbt-fabrication-hil` | POSIX shared memory ring (`shm_open`/`mmap`) with lock-free atomic SPSC indexing and cache-aligned `#[repr(C, align(64))]` 64-byte frame structures. Features CFT kinetics, McNabb-Foster hydrogen transport modeling, Tokio drain task, latency profiling histograms, and reduced-order model (ROM) residual monitoring (χ<sup>2</sup> / ν). |
 
 *Benchmark Gate:* The 10 kHz telemetry channel pipeline processes over 61,000 frames across 3 synthetic streams with zero frame drops, zero mutex allocation, and sub-microsecond mean processing latency.
 
@@ -300,9 +302,9 @@ The native bindings layer (`shbt-py-bindings` and `shbt-fabrication-hil`) export
 ## Physical Closure Audits & Regression Testing
 
 1. **Physical Closure Audit (`crates/shbt-fabrication-hil/tests/closure_audit.rs`):**
-* **Volume Mapping:** Verifies active domain mapping ratios ($V_{\text{domains}} / V_{\text{metal}} = 8000$) according to `cf.pdf` Equations 29, 35, and 123.
-* **Calorimetric Uncertainty Budget:** Validates GUM calorimetry Monte Carlo propagation ($P = \dot{m} c_p \Delta T + P_{\text{env}}$), confirming standard uncertainty bounds ($u_c \approx 5.696\text{ W} < 5.70\text{ W}$).
-* **Fatigue Life Ceilings:** Evaluates Coffin-Manson strain-life predictions (${\epsilon'}_f = 0.18, c = -0.62$), verifying fatigue endurance bounds across cyclic plastic strain thresholds.
+* **Volume Mapping:** Verifies active domain mapping ratios (V<sub>domains</sub> / V<sub>metal</sub> = 8000) according to `cf.pdf` Equations 29, 35, and 123.
+* **Calorimetric Uncertainty Budget:** Validates GUM calorimetry Monte Carlo propagation (P = ṁ c<sub>p</sub> Δ T + P<sub>env</sub>), confirming standard uncertainty bounds (u<sub>c</sub> ≈ 5.696 W < 5.70 W).
+* **Fatigue Life Ceilings:** Evaluates Coffin-Manson strain-life predictions (ε'<sub>f</sub> = 0.18, c = -0.62), verifying fatigue endurance bounds across cyclic plastic strain thresholds.
 
 
 2. **Dual-ISA Bitwise Regression (`crates/shbt-fabrication-hil/tests/bitwise_regression.rs`):**
