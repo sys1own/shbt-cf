@@ -45,6 +45,58 @@ tests/
 
 ### Canonical 9-Pillar Ecosystem Topology
 
+
+```mermaid
+flowchart TD
+    %% Global Themes & Classes
+    classDef core fill:#0b192c,stroke:#38bdf8,stroke-width:2px,color:#f0f6fc;
+    classDef infra fill:#0d1b2a,stroke:#48cae4,stroke-width:1.5px,color:#f0f6fc;
+    classDef vehicle fill:#13111c,stroke:#a78bfa,stroke-width:1.5px,color:#f0f6fc;
+    classDef apex fill:#1e1035,stroke:#f43f5e,stroke-width:2px,color:#f0f6fc;
+    classDef group fill:#090d16,stroke:#334155,stroke-width:1px,stroke-dasharray: 4 4,color:#94a3b8;
+
+    %% 1. Foundational Math Authority
+    PRECISION["<b>shbt-precision</b><br/>Computational Math & Cosmology<br/><sub>512-bit MPFR / WZW Characters (26, 8, 312)</sub>"]:::core
+
+    %% 2. Power, Thermal & Microkernel Infrastructure
+    subgraph INFRA ["PHYSICAL & RUNTIME FOUNDATIONS"]
+        POWER["<b>shbt-power</b><br/>Commercial Fusion Grid<br/><sub>8,750 MW p-11B Twin</sub>"]:::infra
+        CF["<b>shbt-cf</b><br/>1,800-Module LANR Array<br/><sub>Thermal-Hydraulics & 999 kW DC</sub>"]:::infra
+        QC["<b>shbt-qc</b><br/>Bare-Metal Microkernel<br/><sub>Photonic Quantum Bus & shbt-os</sub>"]:::infra
+    end
+
+    %% 3. Specialized Vehicle Twins Cluster
+    subgraph VEHICLES ["SPECIALIZED VEHICLE TWINS"]
+        direction LR
+        GHOST["<b>shbt-ghost</b><br/>Reactionless Propulsion<br/><sub>Local Gravity Wells</sub>"]:::vehicle
+        RECON["<b>shbt-recon</b><br/>State Translocation<br/><sub>Macroscopic Gateway</sub>"]:::vehicle
+        SGLT["<b>shbt-sglt</b><br/>Deep-Space Lensing<br/><sub>Synthetic Telescope</sub>"]:::vehicle
+        WARP["<b>shbt-warp</b><br/>Holographic Warp Metric<br/><sub>3+1D Relativistic Flight</sub>"]:::vehicle
+    end
+
+    %% 4. Multi-Protocol Apex Bench
+    EXOTIC["<b>shbt-exotic</b><br/><b>MULTI-PROTOCOL SPACETIME ENGINEERING CO-SIMULATION BENCH</b><br/>• Cross-Protocol Field Coupling (Warp + Stasis + Translocation + Wells)<br/>• Global Energy Condition & Ford-Roman Quantum Inequality Auditing<br/>• Dynamic 5-Stage Multi-Technology Flight Director"]:::apex
+
+    %% Connectors
+    PRECISION --> POWER
+    PRECISION --> CF
+    PRECISION --> QC
+
+    POWER & CF & QC --> GHOST & RECON & SGLT & WARP
+    GHOST & RECON & SGLT & WARP --> EXOTIC
+
+    %% Repository Hyperlinks (Works natively in GitHub markdown)
+    click PRECISION "[https://github.com/sys1own/shbt-precision](https://github.com/sys1own/shbt-precision)" "sys1own/shbt-precision"
+    click POWER "[https://github.com/sys1own/shbt-power](https://github.com/sys1own/shbt-power)" "sys1own/shbt-power"
+    click CF "[https://github.com/sys1own/shbt-cf](https://github.com/sys1own/shbt-cf)" "sys1own/shbt-cf"
+    click QC "[https://github.com/sys1own/shbt-qc](https://github.com/sys1own/shbt-qc)" "sys1own/shbt-qc"
+    click GHOST "[https://github.com/sys1own/shbt-ghost](https://github.com/sys1own/shbt-ghost)" "sys1own/shbt-ghost"
+    click RECON "[https://github.com/sys1own/shbt-recon](https://github.com/sys1own/shbt-recon)" "sys1own/shbt-recon"
+    click SGLT "[https://github.com/sys1own/shbt-sglt](https://github.com/sys1own/shbt-sglt)" "sys1own/shbt-sglt"
+    click WARP "[https://github.com/sys1own/shbt-warp](https://github.com/sys1own/shbt-warp)" "sys1own/shbt-warp"
+    click EXOTIC "[https://github.com/sys1own/shbt-exotic](https://github.com/sys1own/shbt-exotic)" "sys1own/shbt-exotic"
+
+
 ```text
                               [shbt-precision]
                        Computational Math & Cosmology
