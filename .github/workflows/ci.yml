@@ -8,12 +8,11 @@ on:
 env:
   CARGO_TERM_COLOR: always
   # Runners are heterogeneous; pin the ISA so `cargo check` output is stable while
-  # keeping every other flag from .cargo/config.toml (strict IEEE 754, opt-level=3).
+  # keeping every other flag from .cargo/config.toml (opt-level=3). Strict IEEE 754
+  # semantics are rustc's default — no fast-math is ever enabled.
   CARGO_BUILD_RUSTFLAGS: >-
     -C target-cpu=x86-64-v3
     -C opt-level=3
-    -C llvm-args=-enable-no-nans-fp-math=false
-    -C llvm-args=-enable-no-signed-zeros-fp-math=false
 
 jobs:
   check:
@@ -76,8 +75,6 @@ jobs:
       CARGO_BUILD_RUSTFLAGS: >-
         -C target-cpu=${{ matrix.cpu }}
         -C opt-level=3
-        -C llvm-args=-enable-no-nans-fp-math=false
-        -C llvm-args=-enable-no-signed-zeros-fp-math=false
     steps:
       - uses: actions/checkout@v4
       - name: GMP/MPFR build prerequisites for `rug`
