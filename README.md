@@ -52,12 +52,12 @@ tests/
                                      │
     ┌────────────────────────────────┼───────────────────────────────┐
     ▼                                ▼                               ▼
-[shbt-power]                     [shbt-cf]                       [shbt-qc]
-Commercial Fusion Grid         1,800-Module LANR Array         Bare-Metal Microkernel &
-(8,750 MW p-11B Twin)          & Thermal-Hydraulics            Photonic Quantum Bus
-│                                │                               │
-└────────────────────────┬───────┴───────────────────────────────┘
-▼
+ [shbt-power]                     [shbt-cf]                       [shbt-qc]
+Commercial Fusion Grid          1,800-Module LANR Array         Bare-Metal Microkernel &
+(8,750 MW p-11B Twin)           & Thermal-Hydraulics            Photonic Quantum Bus
+    │                                │                               │
+    └────────────────────────┬───────┴───────────────────────────────┘
+                             ▼
 ┌────────────────────────────────────────────────────────────────┐
 │                  SPECIALIZED VEHICLE TWINS                     │
 │  • shbt-ghost : Reactionless Propulsion & Local Gravity Wells  │
@@ -65,8 +65,8 @@ Commercial Fusion Grid         1,800-Module LANR Array         Bare-Metal Microk
 │  • shbt-sglt  : Synthetic Gravitational Lensing Telescope      │
 │  • shbt-warp  : Holographic Warp Metric & 3+1D Flight Twin     │
 └────────────────────────┬───────────────────────────────────────┘
-│
-▼
+                         │
+                         ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
 │                               shbt-exotic                                │
 │        MULTI-PROTOCOL SPACETIME ENGINEERING CO-SIMULATION BENCH          │
